@@ -26,7 +26,6 @@
         
         h2 { margin-top: 0; color: #2c3e50; text-align: center; margin-bottom: 25px; }
 
-        /* 💡 추가된 주의사항 박스 스타일 */
         .warning-box {
             background-color: #fff3cd;
             color: #856404;
@@ -40,20 +39,30 @@
 
         .upload-box {
             border: 2px dashed #3498db;
-            padding: 30px;
+            padding: 40px 30px;
             text-align: center;
             border-radius: 8px;
             background-color: #ebf5fb;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
             margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-        .upload-box:hover { background-color: #d6eaf8; }
+        .upload-box.dragover {
+            background-color: #d6eaf8;
+            border-color: #2980b9;
+            transform: scale(1.02);
+        }
         .upload-box input { display: none; }
-        .upload-label { font-size: 16px; font-weight: bold; color: #2980b9; cursor: pointer; }
+        .upload-label { font-size: 16px; font-weight: bold; color: #2980b9; cursor: pointer; pointer-events: none; }
+        .upload-sub { font-size: 13px; color: #7f8c8d; margin-top: 8px; pointer-events: none; }
 
+        /* 설정창이 이제 처음부터 보이도록 수정 */
         .settings {
-            display: none;
+            display: block; 
             background: #f8fafc;
             padding: 20px;
             border-radius: 8px;
@@ -74,7 +83,7 @@
         }
 
         .preview-container {
-            display: none;
+            display: none; /* 이미지가 없으므로 미리보기만 숨김 */
             text-align: center;
             margin-bottom: 20px;
         }
@@ -86,7 +95,6 @@
         }
         .info-text { font-size: 15px; color: #334155; margin-top: 15px; }
         
-        /* 💡 추가된 위험 경고 텍스트 (기본은 숨김) */
         .danger-text {
             color: #e74c3c;
             font-weight: bold;
@@ -98,22 +106,28 @@
             border-radius: 6px;
         }
 
+        /* 다운로드 버튼도 처음부터 보이지만 비활성화 상태로 둠 */
         .btn-download {
             width: 100%;
             padding: 15px;
-            background-color: #2ecc71;
+            background-color: #95a5a6; /* 기본 회색 */
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
-            cursor: pointer;
-            display: none;
+            cursor: not-allowed;
             transition: background 0.2s;
         }
-        .btn-download:hover { background-color: #27ae60; }
-        .btn-download:active { transform: scale(0.98); }
-        .btn-disabled { background-color: #95a5a6 !important; cursor: not-allowed; }
+        
+        /* 이미지가 정상 로드되면 활성화되는 클래스 */
+        .btn-download.active {
+            background-color: #2ecc71;
+            cursor: pointer;
+        }
+        .btn-download.active:hover { background-color: #27ae60; }
+        .btn-download.active:active { transform: scale(0.98); }
+        .btn-disabled { background-color: #e74c3c !important; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -124,12 +138,13 @@
         <div class="warning-box">
             <strong>⚠️ 사용 전 주의사항</strong><br>
             이 도구는 브라우저의 메모리를 사용하여 이미지를 처리합니다. 
-            이미 크기가 큰 원본 사진을 무리하게 8배로 확대할 경우, 컴퓨터 메모리 초과로 인해 <strong>브라우저가 일시적으로 멈추거나 꺼질 수 있습니다.</strong> 
+            이미 크기가 큰 원본 사진을 무리하게 8배로 확대할 경우, <strong>브라우저가 일시적으로 멈추거나 꺼질 수 있습니다.</strong> 
             작은 아이콘, 로고, 저화질 이미지 위주로 사용을 권장합니다.
         </div>
 
         <label class="upload-box" id="dropZone">
-            <span class="upload-label">📸 여기를 클릭하여 이미지 선택</span>
+            <span class="upload-label">📸 클릭하여 이미지 선택</span>
+            <span class="upload-sub">(또는 파일을 여기로 끌어다 놓으세요)</span>
             <input type="file" id="imageInput" accept="image/*">
         </label>
 
@@ -146,4 +161,149 @@
                 <label>이미지 최적화 방식</label>
                 <select id="modeSelect">
                     <option value="photo">일반 사진 / 풍경 (부드럽게 보정)</option>
-                    <option value="pixel">로고 /
+                    <option value="pixel">로고 / 아이콘 / 글자 (윤곽선 선명하게 유지)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="preview-container" id="previewArea">
+            <label style="font-weight: bold; color: #2c3e50;">원본 미리보기</label><br><br>
+            <img id="previewImg" src="" alt="미리보기">
+            <div class="info-text" id="resolutionInfo"></div>
+            
+            <div class="danger-text" id="dangerAlert">
+                🚨 경고: 변환 후 해상도가 너무 커서 브라우저가 멈출 위험이 높습니다. 배율을 낮춰주세요!
+            </div>
+        </div>
+
+        <button class="btn-download" id="downloadBtn" disabled>이미지를 먼저 등록해주세요</button>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const dropZone = document.getElementById('dropZone');
+        const previewArea = document.getElementById('previewArea');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const scaleSelect = document.getElementById('scaleSelect');
+        const modeSelect = document.getElementById('modeSelect');
+        const previewImg = document.getElementById('previewImg');
+        const resolutionInfo = document.getElementById('resolutionInfo');
+        const dangerAlert = document.getElementById('dangerAlert');
+
+        let originalImg = new Image();
+        let originalFileName = '';
+
+        // 1. 공통 파일 처리 함수
+        function processFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+
+            originalFileName = file.name.split('.')[0];
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImg.src = event.target.result;
+                previewImg.src = event.target.result;
+                
+                originalImg.onload = function() {
+                    previewArea.style.display = 'block';
+                    
+                    // 버튼 활성화 처리
+                    downloadBtn.disabled = false;
+                    downloadBtn.classList.add('active');
+                    downloadBtn.innerText = '확대된 이미지 다운로드';
+                    
+                    updateInfo();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 2. 클릭으로 파일 선택 시 이벤트
+        imageInput.addEventListener('change', function(e) {
+            processFile(e.target.files[0]);
+        });
+
+        // 3. 드래그 앤 드롭 지원 이벤트
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                // 파일 인풋에도 데이터 전송 (나중에 다시 클릭 업로드 시 버그 방지)
+                imageInput.files = e.dataTransfer.files;
+                processFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // 4. 배율 변경 시 예상 해상도 업데이트
+        scaleSelect.addEventListener('change', updateInfo);
+
+        function updateInfo() {
+            if (!originalImg.src) return;
+
+            const scale = parseInt(scaleSelect.value);
+            const newWidth = originalImg.width * scale;
+            const newHeight = originalImg.height * scale;
+            
+            resolutionInfo.innerHTML = `원본: ${originalImg.width} x ${originalImg.height}px <br> <strong>변환 후 예상: <span style="color:#2980b9">${newWidth} x ${newHeight}px</span></strong>`;
+
+            const totalPixels = newWidth * newHeight;
+            if (totalPixels > 16000000) {
+                dangerAlert.style.display = 'block';
+                downloadBtn.classList.add('btn-disabled');
+                downloadBtn.classList.remove('active');
+            } else {
+                dangerAlert.style.display = 'none';
+                downloadBtn.classList.remove('btn-disabled');
+                downloadBtn.classList.add('active');
+            }
+        }
+
+        // 5. 다운로드 실행
+        downloadBtn.addEventListener('click', function() {
+            if (!originalImg.src || this.disabled) return;
+
+            const totalPixels = (originalImg.width * parseInt(scaleSelect.value)) * (originalImg.height * parseInt(scaleSelect.value));
+            if (totalPixels > 16000000) {
+                const proceed = confirm("해상도가 매우 큽니다. 컴퓨터가 일시적으로 멈출 수 있습니다. 그래도 진행하시겠습니까?");
+                if (!proceed) return;
+            }
+
+            const scale = parseInt(scaleSelect.value);
+            const mode = modeSelect.value;
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = originalImg.width * scale;
+            canvas.height = originalImg.height * scale;
+
+            if (mode === 'photo') {
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+            } else {
+                ctx.imageSmoothingEnabled = false;
+            }
+
+            ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
+
+            const dataUrl = canvas.toDataURL('image/png'); 
+            const link = document.createElement('a');
+            link.download = `${originalFileName}_${scale}x_upscaled.png`;
+            link.href = dataUrl;
+            link.click();
+        });
+    </script>
+
+</body>
+</html>
