@@ -42,6 +42,7 @@
                 <option value="2">2배 AI 확대 (200%)</option>
                 <option value="3">3배 AI 확대 (300%)</option>
                 <option value="4" selected>4배 AI 확대 (400%) - 추천</option>
+                <option value="6">🔥 6배 AI 초고화질 확대 (600%)</option>
             </select>
         </div>
 
@@ -74,14 +75,12 @@
         let origWidth = 0;
         let origHeight = 0;
 
-        // 이미지 로드 시 크기 계산 함수
         function updatePixelInfo() {
             if (!base64Image || origWidth === 0) return;
             const currentScale = parseInt(scaleSelect.value);
             infoText.innerHTML = `원본: ${origWidth}x${origHeight}px ➡️ <strong>AI ${currentScale}배 정밀 복원: ${origWidth * currentScale}x${origHeight * currentScale}px</strong>`;
         }
 
-        // 사용자가 배율을 변경할 때마다 실시간 안내 문구 업데이트
         scaleSelect.addEventListener('change', updatePixelInfo);
 
         imageInput.addEventListener('change', function(e) {
@@ -114,7 +113,7 @@
             const selectedScale = scaleSelect.value;
             try {
                 downloadBtn.classList.add('loading');
-                downloadBtn.innerText = `⚡ AI 인공지능이 ${selectedScale}배 복원 중... (약 10~15초 소요)`;
+                downloadBtn.innerText = `⚡ AI 인공지능이 ${selectedScale}배 복원 중... (약 10~20초 소요)`;
                 downloadBtn.disabled = true;
 
                 const response = await fetch(SERVER_URL, {
@@ -125,7 +124,7 @@
                     },
                     body: JSON.stringify({ 
                         image: base64Image,
-                        scale: selectedScale // 서버로 선택한 배율 데이터 전송
+                        scale: selectedScale 
                     })
                 });
 
