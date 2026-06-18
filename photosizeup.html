@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>고화질 이미지 확대기</title>
+    <title>AI 고화질 이미지 확대기</title>
+    <script src="https://cdn.jsdelivr.net/npm/@upscalerjs/default-model@latest/dist/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/upscaler@latest/dist/browser/umd/upscaler.min.js"></script>
     <style>
         * { box-sizing: border-box; }
         body { 
@@ -27,11 +29,11 @@
         h2 { margin-top: 0; color: #2c3e50; text-align: center; margin-bottom: 25px; }
 
         .warning-box {
-            background-color: #fff3cd;
-            color: #856404;
+            background-color: #e3f2fd;
+            color: #0d47a1;
             padding: 15px;
             border-radius: 8px;
-            border-left: 5px solid #ffc107;
+            border-left: 5px solid #2196f3;
             font-size: 14px;
             line-height: 1.5;
             margin-bottom: 20px;
@@ -60,7 +62,6 @@
         .upload-label { font-size: 16px; font-weight: bold; color: #2980b9; cursor: pointer; pointer-events: none; }
         .upload-sub { font-size: 13px; color: #7f8c8d; margin-top: 8px; pointer-events: none; }
 
-        /* 설정창이 이제 처음부터 보이도록 수정 */
         .settings {
             display: block; 
             background: #f8fafc;
@@ -83,7 +84,7 @@
         }
 
         .preview-container {
-            display: none; /* 이미지가 없으므로 미리보기만 숨김 */
+            display: none; 
             text-align: center;
             margin-bottom: 20px;
         }
@@ -106,11 +107,10 @@
             border-radius: 6px;
         }
 
-        /* 다운로드 버튼도 처음부터 보이지만 비활성화 상태로 둠 */
         .btn-download {
             width: 100%;
             padding: 15px;
-            background-color: #95a5a6; /* 기본 회색 */
+            background-color: #95a5a6; 
             color: white;
             border: none;
             border-radius: 8px;
@@ -120,7 +120,6 @@
             transition: background 0.2s;
         }
         
-        /* 이미지가 정상 로드되면 활성화되는 클래스 */
         .btn-download.active {
             background-color: #2ecc71;
             cursor: pointer;
@@ -128,18 +127,19 @@
         .btn-download.active:hover { background-color: #27ae60; }
         .btn-download.active:active { transform: scale(0.98); }
         .btn-disabled { background-color: #e74c3c !important; cursor: not-allowed; }
+        
+        /* AI 연산 중 로딩 애니메이션 효과 */
+        .loading { background-color: #e67e22 !important; cursor: wait !important; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>🔍 브라우저 고화질 확대기</h2>
+        <h2>🤖 AI 고화질 이미지 확대기</h2>
         
         <div class="warning-box">
-            <strong>⚠️ 사용 전 주의사항</strong><br>
-            이 도구는 브라우저의 메모리를 사용하여 이미지를 처리합니다. 
-            이미 크기가 큰 원본 사진을 무리하게 8배로 확대할 경우, <strong>브라우저가 일시적으로 멈추거나 꺼질 수 있습니다.</strong> 
-            작은 아이콘, 로고, 저화질 이미지 위주로 사용을 권장합니다.
+            <strong>✨ AI 초고해상도(Super Resolution) 안내</strong><br>
+            단순히 픽셀을 늘리는 것이 아니라, AI가 선과 정밀도를 직접 예측하고 복원하여 흐려짐 없이 선명하게 확대합니다. (연산에 수 초~수십 초가 소요될 수 있습니다.)
         </div>
 
         <label class="upload-box" id="dropZone">
@@ -150,18 +150,10 @@
 
         <div class="settings" id="settingsArea">
             <div class="setting-group">
-                <label>확대 배율 선택</label>
+                <label>AI 확대 배율 선택</label>
                 <select id="scaleSelect">
-                    <option value="2">2배 확대 (200%)</option>
-                    <option value="4">4배 확대 (400%)</option>
-                    <option value="8">8배 확대 (800%)</option>
-                </select>
-            </div>
-            <div class="setting-group">
-                <label>이미지 최적화 방식</label>
-                <select id="modeSelect">
-                    <option value="photo">일반 사진 / 풍경 (부드럽게 보정)</option>
-                    <option value="pixel">로고 / 아이콘 / 글자 (윤곽선 선명하게 유지)</option>
+                    <option value="2">2배 AI 확대 (200%)</option>
+                    <option value="4" selected>4배 AI 확대 (400%)</option>
                 </select>
             </div>
         </div>
@@ -172,7 +164,7 @@
             <div class="info-text" id="resolutionInfo"></div>
             
             <div class="danger-text" id="dangerAlert">
-                🚨 경고: 변환 후 해상도가 너무 커서 브라우저가 멈출 위험이 높습니다. 배율을 낮춰주세요!
+                🚨 경고: 해상도가 너무 커서 AI 연산 도중 브라우저 멈춤 현상이 발생할 수 있습니다!
             </div>
         </div>
 
@@ -180,12 +172,14 @@
     </div>
 
     <script>
+        // 2. AI 업스케일러 인스턴스 초기화
+        const upscaler = new Upscaler();
+
         const imageInput = document.getElementById('imageInput');
         const dropZone = document.getElementById('dropZone');
         const previewArea = document.getElementById('previewArea');
         const downloadBtn = document.getElementById('downloadBtn');
         const scaleSelect = document.getElementById('scaleSelect');
-        const modeSelect = document.getElementById('modeSelect');
         const previewImg = document.getElementById('previewImg');
         const resolutionInfo = document.getElementById('resolutionInfo');
         const dangerAlert = document.getElementById('dangerAlert');
@@ -193,7 +187,6 @@
         let originalImg = new Image();
         let originalFileName = '';
 
-        // 1. 공통 파일 처리 함수
         function processFile(file) {
             if (!file || !file.type.startsWith('image/')) return;
 
@@ -207,10 +200,10 @@
                 originalImg.onload = function() {
                     previewArea.style.display = 'block';
                     
-                    // 버튼 활성화 처리
                     downloadBtn.disabled = false;
+                    downloadBtn.classList.remove('loading');
                     downloadBtn.classList.add('active');
-                    downloadBtn.innerText = '확대된 이미지 다운로드';
+                    downloadBtn.innerText = 'AI 복원 및 다운로드 시작';
                     
                     updateInfo();
                 }
@@ -218,34 +211,21 @@
             reader.readAsDataURL(file);
         }
 
-        // 2. 클릭으로 파일 선택 시 이벤트
         imageInput.addEventListener('change', function(e) {
             processFile(e.target.files[0]);
         });
 
-        // 3. 드래그 앤 드롭 지원 이벤트
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-
-        dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-        });
-
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('dragover');
-            
             if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                // 파일 인풋에도 데이터 전송 (나중에 다시 클릭 업로드 시 버그 방지)
                 imageInput.files = e.dataTransfer.files;
                 processFile(e.dataTransfer.files[0]);
             }
         });
 
-        // 4. 배율 변경 시 예상 해상도 업데이트
         scaleSelect.addEventListener('change', updateInfo);
 
         function updateInfo() {
@@ -255,53 +235,47 @@
             const newWidth = originalImg.width * scale;
             const newHeight = originalImg.height * scale;
             
-            resolutionInfo.innerHTML = `원본: ${originalImg.width} x ${originalImg.height}px <br> <strong>변환 후 예상: <span style="color:#2980b9">${newWidth} x ${newHeight}px</span></strong>`;
+            resolutionInfo.innerHTML = `원본: ${originalImg.width} x ${originalImg.height}px <br> <strong>AI 예측 해상도: <span style="color:#2980b9">${newWidth} x ${newHeight}px</span></strong>`;
 
-            const totalPixels = newWidth * newHeight;
-            if (totalPixels > 16000000) {
+            // 사용자의 안전을 위해 변환용 해상도가 너무 크면 경고문 노출
+            if (newWidth > 3000 || newHeight > 3000) {
                 dangerAlert.style.display = 'block';
-                downloadBtn.classList.add('btn-disabled');
-                downloadBtn.classList.remove('active');
             } else {
                 dangerAlert.style.display = 'none';
-                downloadBtn.classList.remove('btn-disabled');
-                downloadBtn.classList.add('active');
             }
         }
 
-        // 5. 다운로드 실행
-        downloadBtn.addEventListener('click', function() {
-            if (!originalImg.src || this.disabled) return;
-
-            const totalPixels = (originalImg.width * parseInt(scaleSelect.value)) * (originalImg.height * parseInt(scaleSelect.value));
-            if (totalPixels > 16000000) {
-                const proceed = confirm("해상도가 매우 큽니다. 컴퓨터가 일시적으로 멈출 수 있습니다. 그래도 진행하시겠습니까?");
-                if (!proceed) return;
-            }
+        // 3. 핵심 로직: AI 기반 이미지 업스케일링 실행
+        downloadBtn.addEventListener('click', async function() {
+            if (!originalImg.src || this.disabled || this.classList.contains('loading')) return;
 
             const scale = parseInt(scaleSelect.value);
-            const mode = modeSelect.value;
             
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            canvas.width = originalImg.width * scale;
-            canvas.height = originalImg.height * scale;
+            try {
+                // UI 상태를 'AI 연산 중' 모드로 변경
+                downloadBtn.classList.add('loading');
+                downloadBtn.innerText = '⚡ AI 엔진 가동 및 픽셀 복원 중... (잠시만 기다려주세요)';
+                
+                // UpscalerJS를 사용한 AI 비전 연산 수행
+                // 기본 모델은 IdealDeblur 2x / 4x를 지원하며, 내부적으로 보간법이 아닌 신경망 연산을 수행합니다.
+                const upsaledDataUrl = await upscaler.upscale(previewImg, {
+                    scale: scale
+                });
 
-            if (mode === 'photo') {
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
-            } else {
-                ctx.imageSmoothingEnabled = false;
+                // 연산 완료 후 다운로드 실행
+                const link = document.createElement('a');
+                link.download = `${originalFileName}_AI_${scale}x.png`;
+                link.href = upsaledDataUrl;
+                link.click();
+
+            } catch (error) {
+                console.error(error);
+                alert("AI 연산 중 오류가 발생했거나 브라우저 메모리가 부족합니다. 더 작은 이미지를 사용해 주세요.");
+            } finally {
+                // UI 복구
+                downloadBtn.classList.remove('loading');
+                downloadBtn.innerText = 'AI 복원 및 다운로드 시작';
             }
-
-            ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
-
-            const dataUrl = canvas.toDataURL('image/png'); 
-            const link = document.createElement('a');
-            link.download = `${originalFileName}_${scale}x_upscaled.png`;
-            link.href = dataUrl;
-            link.click();
         });
     </script>
 
