@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>글자수 세기 | 텍스트 마스터</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        .nav { display: flex; gap: 10px; margin-bottom: 20px; }
+        .nav a { padding: 10px 15px; background: #ddd; color: #333; text-decoration: none; border-radius: 6px; }
+        .nav a.active { background: #3498db; color: white; }
+        textarea { width: 100%; height: 200px; margin: 15px 0; }
+        .stats { display: flex; justify-content: space-around; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="bigsmalltextchange1.html" class="active">글자수</a>
+        <a href="bigsmalltextchange2.html">대소문자</a>
+        <a href="bigsmalltextchange3.html">맞춤법</a>
+    </div>
+    <div class="container">
+        <h2>글자 수 세기</h2>
+        <textarea id="textInput" oninput="count()"></textarea>
+        <div class="stats">
+            <span>공백 포함: <span id="countAll">0</span></span>
+            <span>공백 제외: <span id="countNoSpace">0</span></span>
+        </div>
+    </div>
+    <script>
+        function count() {
+            const text = document.getElementById('textInput').value;
+            document.getElementById('countAll').innerText = text.length;
+            document.getElementById('countNoSpace').innerText = text.replace(/[\s]/g, '').length;
+        }
+    </script>
+</body>
+</html>
