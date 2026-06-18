@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>색상 코드 변환기 & 팔레트</title>
+    <title>국민 통합 색상 코드 변환기 & 팔레트</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8fafc;
             display: flex;
             justify-content: center;
             padding: 40px 20px;
@@ -17,27 +17,27 @@
         .container {
             background: white;
             padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
         }
 
         h2 {
             text-align: center;
-            color: #1e293b;
+            color: #0f172a;
             margin-top: 0;
             margin-bottom: 30px;
-            font-size: 24px;
+            font-size: 26px;
         }
 
-        /* 메인 컬러 피커 영역 */
+        /* 메인 포토샵 컬러 피커 영역 */
         .picker-section {
-            background: #f8fafc;
+            background: #f1f5f9;
             padding: 25px;
-            border-radius: 16px;
+            border-radius: 20px;
+            margin-bottom: 35px;
             border: 1px solid #e2e8f0;
-            margin-bottom: 30px;
         }
 
         .picker-header {
@@ -47,24 +47,23 @@
             gap: 20px;
         }
 
-        /* 💡 포토샵 컬러피커를 호출하는 마법의 버튼 */
         .color-input-wrapper {
             position: relative;
-            width: 80px;
-            height: 80px;
-            border-radius: 16px;
+            width: 85px;
+            height: 85px;
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             cursor: pointer;
-            border: 3px solid white;
+            border: 4px solid white;
         }
 
         .color-input-wrapper input[type="color"] {
             position: absolute;
             top: -10px;
             left: -10px;
-            width: 100px;
-            height: 100px;
+            width: 110px;
+            height: 110px;
             cursor: pointer;
             border: none;
         }
@@ -78,12 +77,12 @@
         .color-bar {
             height: 24px;
             width: 100%;
-            border-radius: 6px;
-            background-color: #FFD93D;
-            transition: background-color 0.2s;
+            border-radius: 8px;
+            background-color: #03C75A;
+            transition: background-color 0.15s;
         }
 
-        /* 코드 출력 및 복사 영역 */
+        /* 코드 표시창 */
         .code-box {
             display: flex;
             align-items: center;
@@ -91,14 +90,15 @@
             background: white;
             border: 1px solid #cbd5e1;
             padding: 12px 16px;
-            border-radius: 10px;
+            border-radius: 12px;
             margin-bottom: 12px;
         }
 
         .code-label {
             font-weight: bold;
             color: #94a3b8;
-            width: 40px;
+            width: 45px;
+            font-size: 14px;
         }
 
         .code-value {
@@ -107,14 +107,13 @@
             font-size: 16px;
             color: #0f172a;
             font-weight: 600;
-            letter-spacing: 0.5px;
         }
 
         .copy-btn {
             background: #f1f5f9;
             border: none;
             padding: 8px 16px;
-            border-radius: 6px;
+            border-radius: 8px;
             color: #475569;
             font-weight: 600;
             cursor: pointer;
@@ -123,135 +122,200 @@
         }
 
         .copy-btn:hover { background: #e2e8f0; }
-        .copy-btn:active { background: #cbd5e1; transform: scale(0.95); }
 
-        /* 추천 팔레트 영역 */
-        .palette-title {
-            font-size: 15px;
+        /* 대제목 스타일 */
+        .section-title {
+            font-size: 16px;
             font-weight: bold;
-            color: #334155;
+            color: #1e293b;
+            margin-top: 25px;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
         }
 
-        .palette-grid {
+        /* 컬러 그리드 시스템 (4열 배치로 깔끔하게 정리) */
+        .color-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
-        .swatch {
+        .color-card {
+            background: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            background: white;
-        }
-
-        .swatch:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
-        .swatch-color { height: 40px; width: 100%; }
-        .swatch-name {
+            border-radius: 12px;
+            padding: 8px;
             text-align: center;
-            padding: 10px;
-            font-size: 13px;
-            color: #64748b;
-            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        /* 추천 색상들 */
-        .c-coral { background-color: #FF6B6B; }
-        .c-blue { background-color: #4D96FF; }
-        .c-green { background-color: #6BCB77; }
-        .c-yellow { background-color: #FFD93D; }
-        .c-purple { background-color: #845EC2; }
-        .c-dark { background-color: #2C3E50; }
+        .color-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            background: white;
+            border-color: #cbd5e1;
+        }
 
-        /* 복사 완료 알림 */
+        .card-preview {
+            height: 35px;
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .card-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: #334155;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 소제목 테마 스타일 */
+        .theme-subtitle {
+            font-size: 13px;
+            font-weight: 700;
+            color: #64748b;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+
+        /* 토스트 알림 */
         .toast {
             position: fixed;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             background: #10b981;
             color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 12px 28px;
+            border-radius: 10px;
             font-weight: bold;
             opacity: 0;
             transition: opacity 0.3s;
             pointer-events: none;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>🎨 색상 코드 변환기 & 팔레트</h2>
+        <h2>🎨 색상 코드 변환기 & 테마 팔레트</h2>
 
+        <!-- 메인 제어 센터 -->
         <div class="picker-section">
             <div class="picker-header">
-                <!-- 💡 이 네모 박스를 클릭하면 1,670만 색상 피커가 뜹니다 -->
-                <div class="color-input-wrapper" title="클릭하여 색상을 자유롭게 선택하세요!">
-                    <input type="color" id="mainColorPicker" value="#FFD93D">
+                <div class="color-input-wrapper" title="포토샵 컬러피커 열기">
+                    <input type="color" id="mainColorPicker" value="#03C75A">
                 </div>
                 <div class="picker-info" style="flex-grow: 1;">
-                    <h3>왼쪽 박스를 눌러 색상을 고르세요</h3>
+                    <h3>상자 클릭 시 포토샵형 피커 활성화</h3>
                     <div class="color-bar" id="colorBar"></div>
                 </div>
             </div>
 
             <div class="code-box">
                 <div class="code-label">HEX</div>
-                <div class="code-value" id="hexOutput">#FFD93D</div>
+                <div class="code-value" id="hexOutput">#03C75A</div>
                 <button class="copy-btn" onclick="copyText('hexOutput')">복사</button>
             </div>
 
             <div class="code-box">
                 <div class="code-label">RGB</div>
-                <div class="code-value" id="rgbOutput">rgb(255, 217, 61)</div>
+                <div class="code-value" id="rgbOutput">rgb(3, 199, 90)</div>
                 <button class="copy-btn" onclick="copyText('rgbOutput')">복사</button>
             </div>
         </div>
 
-        <div class="palette-title">✨ 클릭 시 해당 색상으로 즉시 변환</div>
-        <div class="palette-grid">
-            <div class="swatch" onclick="setColor('#FF6B6B')">
-                <div class="swatch-color c-coral"></div>
-                <div class="swatch-name">감성 소프트 코랄</div>
+        <!-- 파트 1: 사람들이 가장 많이 검색하는 브랜드 컬러 -->
+        <div class="section-title">🔥 사람들이 많이 찾는 인기 브랜드 컬러</div>
+        <div class="color-grid">
+            <div class="color-card" onclick="setColor('#03C75A')">
+                <div class="card-preview" style="background-color: #03C75A;"></div>
+                <div class="card-name">네이버 그린</div>
             </div>
-            <div class="swatch" onclick="setColor('#4D96FF')">
-                <div class="swatch-color c-blue"></div>
-                <div class="swatch-name">신뢰감을 주는 블루</div>
+            <div class="color-card" onclick="setColor('#FEE500')">
+                <div class="card-preview" style="background-color: #FEE500;"></div>
+                <div class="card-name">카카오 옐로우</div>
             </div>
-            <div class="swatch" onclick="setColor('#6BCB77')">
-                <div class="swatch-color c-green"></div>
-                <div class="swatch-name">싱그러운 네이처 그린</div>
+            <div class="color-card" onclick="setColor('#0064FF')">
+                <div class="card-preview" style="background-color: #0064FF;"></div>
+                <div class="card-name">토스 블루</div>
             </div>
-            <div class="swatch" onclick="setColor('#FFD93D')">
-                <div class="swatch-color c-yellow"></div>
-                <div class="swatch-name">시선강탈 포인트 옐로우</div>
+            <div class="color-card" onclick="setColor('#FF0000')">
+                <div class="card-preview" style="background-color: #FF0000;"></div>
+                <div class="card-name">유튜브 레드</div>
             </div>
-            <div class="swatch" onclick="setColor('#845EC2')">
-                <div class="swatch-color c-purple"></div>
-                <div class="swatch-name">고급스러운 딥 퍼플</div>
+            <div class="color-card" onclick="setColor('#2AC1BC')">
+                <div class="card-preview" style="background-color: #2AC1BC;"></div>
+                <div class="card-name">배민 민트</div>
             </div>
-            <div class="swatch" onclick="setColor('#2C3E50')">
-                <div class="swatch-color c-dark"></div>
-                <div class="swatch-name">차분한 모던 차콜</div>
+            <div class="color-card" onclick="setColor('#FF7E36')">
+                <div class="card-preview" style="background-color: #FF7E36;"></div>
+                <div class="card-name">당근 오렌지</div>
+            </div>
+            <div class="color-card" onclick="setColor('#006241')">
+                <div class="card-preview" style="background-color: #006241;"></div>
+                <div class="card-name">스벅 그린</div>
+            </div>
+            <div class="color-card" onclick="setColor('#111111')">
+                <div class="card-preview" style="background-color: #111111;"></div>
+                <div class="card-name">무신사 블랙</div>
             </div>
         </div>
+
+        <!-- 파트 2: 특별 테마 컬렉션 20선 -->
+        <div class="section-title">✨ 디자인 퀄리티업 특별 테마 (20선)</div>
+        
+        <div class="theme-subtitle">① 인스타 감성 소포트 파스텔</div>
+        <div class="color-grid">
+            <div class="color-card" onclick="setColor('#FFB7B2')"><div class="card-preview" style="background-color: #FFB7B2;"></div><div class="card-name">살구 피치</div></div>
+            <div class="color-card" onclick="setColor('#FFDAC1')"><div class="card-preview" style="background-color: #FFDAC1;"></div><div class="card-name">밀크 버터</div></div>
+            <div class="color-card" onclick="setColor('#E2F0CB')"><div class="card-preview" style="background-color: #E2F0CB;"></div><div class="card-name">멜론 크림</div></div>
+            <div class="color-card" onclick="setColor('#B5EAD7')"><div class="card-preview" style="background-color: #B5EAD7;"></div><div class="card-name">민트 캔디</div></div>
+            <div class="color-card" onclick="setColor('#C7CEEA')"><div class="card-preview" style="background-color: #C7CEEA;"></div><div class="card-name">라벤더 안개</div></div>
+        </div>
+
+        <div class="theme-subtitle">② 신뢰감을 주는 스마트 비즈니스</div>
+        <div class="color-grid">
+            <div class="color-card" onclick="setColor('#1E3A8A')"><div class="card-preview" style="background-color: #1E3A8A;"></div><div class="card-name">딥 네이비</div></div>
+            <div class="color-card" onclick="setColor('#0284C7')"><div class="card-preview" style="background-color: #0284C7;"></div><div class="card-name">스카이 블루</div></div>
+            <div class="color-card" onclick="setColor('#0F172A')"><div class="card-preview" style="background-color: #0F172A;"></div><div class="card-name">다크 차콜</div></div>
+            <div class="color-card" onclick="setColor('#475569')"><div class="card-preview" style="background-color: #475569;"></div><div class="card-name">슬레이트 灰</div></div>
+            <div class="color-card" onclick="setColor('#94A3B8')"><div class="card-preview" style="background-color: #94A3B8;"></div><div class="card-name">메탈 실버</div></div>
+        </div>
+
+        <div class="theme-subtitle">③ 따뜻하고 아늑한 내추럴 얼스(Earth)</div>
+        <div class="color-grid">
+            <div class="color-card" onclick="setColor('#8B5A2B')"><div class="card-preview" style="background-color: #8B5A2B;"></div><div class="card-name">우드 브라운</div></div>
+            <div class="color-card" onclick="setColor('#CD853F')"><div class="card-preview" style="background-color: #CD853F;"></div><div class="card-name">테라코타</div></div>
+            <div class="color-card" onclick="setColor('#D2B48C')"><div class="card-preview" style="background-color: #D2B48C;"></div><div class="card-name">웜 베이지</div></div>
+            <div class="color-card" onclick="setColor('#556B2F')"><div class="card-preview" style="background-color: #556B2F;"></div><div class="card-name">올리브 카키</div></div>
+            <div class="color-card" onclick="setColor('#E6F2E8')"><div class="card-preview" style="background-color: #E6F2E8;"></div><div class="card-name">소프트 세이지</div></div>
+        </div>
+
+        <div class="theme-subtitle">④ 트렌디하고 힙한 네온 시티 팝</div>
+        <div class="color-grid">
+            <div class="color-card" onclick="setColor('#FF007F')"><div class="card-preview" style="background-color: #FF007F;"></div><div class="card-name">네온 핑크</div></div>
+            <div class="color-card" onclick="setColor('#39FF14')"><div class="card-preview" style="background-color: #39FF14;"></div><div class="card-name">라임 야광</div></div>
+            <div class="color-card" onclick="setColor('#00FFFF')"><div class="card-preview" style="background-color: #00FFFF;"></div><div class="card-name">사이버 시안</div></div>
+            <div class="color-card" onclick="setColor('#8A2BE2')"><div class="card-preview" style="background-color: #8A2BE2;"></div><div class="card-name">퍼플 쇼크</div></div>
+            <div class="color-card" onclick="setColor('#FF4500')"><div class="card-preview" style="background-color: #FF4500;"></div><div class="card-name">선셋 오렌지</div></div>
+        </div>
+
     </div>
 
-    <!-- 복사 알림창 -->
-    <div class="toast" id="toast">✅ 복사되었습니다!</div>
+    <div class="toast" id="toast">✅ 클립보드에 복사되었습니다!</div>
 
     <script>
         const colorPicker = document.getElementById('mainColorPicker');
@@ -259,7 +323,6 @@
         const hexOutput = document.getElementById('hexOutput');
         const rgbOutput = document.getElementById('rgbOutput');
 
-        // HEX를 RGB로 변환하는 마법의 수학 공식
         function hexToRgb(hex) {
             const r = parseInt(hex.slice(1, 3), 16);
             const g = parseInt(hex.slice(3, 5), 16);
@@ -267,43 +330,29 @@
             return `rgb(${r}, ${g}, ${b})`;
         }
 
-        // 화면의 색상과 글자를 모두 업데이트하는 함수
         function updateColors(hexValue) {
-            // 소문자로 나올 수 있는 hex를 대문자로 깔끔하게 변경
             const upperHex = hexValue.toUpperCase();
-            
-            colorPicker.value = hexValue; // 피커 내부 색상 변경
-            colorBar.style.backgroundColor = hexValue; // 막대기 색상 변경
-            
+            colorPicker.value = hexValue;
+            colorBar.style.backgroundColor = hexValue;
             hexOutput.innerText = upperHex;
             rgbOutput.innerText = hexToRgb(hexValue);
         }
 
-        // 1. 사용자가 피커를 눌러 색을 요리조리 바꿀 때 실시간 작동
         colorPicker.addEventListener('input', function(e) {
             updateColors(e.target.value);
         });
 
-        // 2. 밑에 있는 추천 색상 버튼을 눌렀을 때 작동
         function setColor(hexValue) {
             updateColors(hexValue);
         }
 
-        // 3. 복사 버튼 기능
         function copyText(elementId) {
             const textToCopy = document.getElementById(elementId).innerText;
             navigator.clipboard.writeText(textToCopy).then(() => {
-                showToast();
+                const toast = document.getElementById('toast');
+                toast.style.opacity = '1';
+                setTimeout(() => { toast.style.opacity = '0'; }, 1500);
             });
-        }
-
-        // 4. 복사 완료 알림 띄우기
-        function showToast() {
-            const toast = document.getElementById('toast');
-            toast.style.opacity = '1';
-            setTimeout(() => {
-                toast.style.opacity = '0';
-            }, 2000);
         }
     </script>
 </body>
