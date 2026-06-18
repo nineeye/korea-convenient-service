@@ -45,7 +45,7 @@
     </div>
 
     <script>
-        // 🔗 24시간 안정적으로 구동되는 허깅페이스 고정 주소 세팅 완벽 매립
+        // 🔗 허깅페이스 클라우드 다이렉트 프록시 라우팅 주소 설정
         const SERVER_URL = 'https://youssang-photosizeup.hf.space/upscale';
 
         const imageInput = document.getElementById('imageInput');
@@ -87,12 +87,20 @@
                 downloadBtn.innerText = '⚡ AI 인공지능이 이미지 복원 중... (약 10~15초 소요)';
                 downloadBtn.disabled = true;
 
-                // 허깅페이스 영구 무료 AI 서버로 정밀 업스케일링 요청
                 const response = await fetch(SERVER_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify({ image: base64Image })
                 });
+
+                // 만약 서버에서 에러 코드가 날아오면 본문 내용을 팝업으로 상세히 표출
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`서버 응답 에러 (${response.status}): ${errorText}`);
+                }
 
                 const result = await response.json();
 
@@ -102,12 +110,12 @@
                     link.href = result.image;
                     link.click();
                 } else {
-                    alert("서버 연산 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+                    alert("서버 내부 연산 오류: " + (result.error || "알 수 없는 응답 형식"));
                 }
 
             } catch (error) {
                 console.error(error);
-                alert("AI 서버와 통신할 수 없습니다. 서버 부팅 직후에는 첫 연산 시 약간의 지연이 있을 수 있습니다.");
+                alert(`통신 오류 발생!\n상세원인: ${error.message}\n\n서버가 잠시 수면 모드(Sleep)에 들어갔거나 부팅 중일 수 있습니다. 잠시 후 새로고침 후 다시 시도해 주세요.`);
             } finally {
                 downloadBtn.classList.remove('loading');
                 downloadBtn.disabled = false;
