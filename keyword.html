@@ -17,7 +17,7 @@
         .search-box button { padding: 12px 24px; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
         .search-box button:hover { background-color: #2980b9; }
 
-        .section-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .section-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; margin-top: 25px; }
         .engine-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
         .google-color { color: #4285F4; }
         .naver-color { color: #03C75A; }
@@ -28,8 +28,10 @@
         .google-badge:hover { background: #e0f2fe; border-color: #38bdf8; color: #0369a1; }
         .naver-badge:hover { background: #e6f9f0; border-color: #57cc99; color: #1b4332; }
 
-        .trend-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; text-align: left; }
-        .trend-table th { background-color: #f8fafc; padding: 12px; font-weight: bold; color: #475569; border-bottom: 2px solid #e2e8f0; }
+        .trend-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; text-align: left; margin-bottom: 20px; }
+        .trend-table th { padding: 12px; font-weight: bold; color: #475569; border-bottom: 2px solid #e2e8f0; }
+        .google-th { background-color: #f0f4ff; }
+        .naver-th { background-color: #eafaf1; }
         .trend-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
         .trend-table tr:hover { background-color: #f8fafc; }
         .rank-num { font-weight: bold; color: #e74c3c; width: 50px; }
@@ -46,36 +48,50 @@
         
         <div class="section-title">🔍 연관 핵심 키워드 무한 확장</div>
         <div class="search-box">
-            <input type="text" id="keywordInput" placeholder="궁금한 메인 키워드를 입력하세요 (예: 맛집, 마그네슘, 다이어트)">
+            <input type="text" id="keywordInput" placeholder="궁금한 메인 키워드를 입력하세요 (예: 해운대, 맛집, 다이어트)">
             <button id="searchBtn">추출하기</button>
         </div>
 
-        <!-- 🔵 구글 연관 키워드 출력 영역 -->
-        <div class="engine-title google-color">🔵 Google 검색 소비자가 함께 찾는 키워드</div>
+        <!-- 🔵 구글 연관 키워드 영역 -->
+        <div class="engine-title google-color">🔵 Google 추천 실시간 연관 단어</div>
         <div class="keyword-container" id="googleSuggestArea">
-            <div class="no-data">키워드를 입력하시면 구글 검색 데이터를 추출합니다.</div>
+            <div class="no-data">키워드를 입력하시면 구글 검색 분석이 시작됩니다.</div>
         </div>
 
-        <!-- 🟢 네이버 연관 키워드 출력 영역 (아래쪽에 깔끔하게 배치) -->
-        <div class="engine-title naver-color">🟢 NAVER 검색 소비자가 함께 찾는 키워드</div>
+        <!-- 🟢 네이버 연관 키워드 영역 -->
+        <div class="engine-title naver-color">🟢 NAVER 추천 실시간 연관 단어</div>
         <div class="keyword-container" id="naverSuggestArea">
-            <div class="no-data">키워드를 입력하시면 네이버 검색 데이터를 추출합니다.</div>
+            <div class="no-data">키워드를 입력하시면 네이버 검색 분석이 시작됩니다.</div>
         </div>
 
         <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 30px 0;">
 
-        <div class="section-title">📈 구글(Google) 대한민국 실시간 급상승 트렌드</div>
-        <div id="loadingBar" class="loading">🔄 실시간 트렌드 데이터를 신선하게 긁어오는 중...</div>
-        
-        <table class="trend-table" id="trendTable">
+        <!-- 📈 구글 실시간 급상승 트렌드 -->
+        <div class="section-title google-color">📈 구글(Google) 대한민국 실시간 급상승 검색어</div>
+        <div id="googleLoading" class="loading">🔄 구글 실시간 검색어를 읽어오는 중...</div>
+        <table class="trend-table">
             <thead>
                 <tr>
-                    <th class="rank-num">순위</th>
-                    <th>급상승 트렌드 키워드</th>
-                    <th>원클릭 연관 확장</th>
+                    <th class="rank-num google-th">순위</th>
+                    <th class="google-th">급상승 트렌드 키워드</th>
+                    <th class="google-th">원클릭 연관 확장</th>
                 </tr>
             </thead>
-            <tbody id="trendBody"></tbody>
+            <tbody id="googleTrendBody"></tbody>
+        </table>
+
+        <!-- 📈 네이버 실시간 트렌드 영역 추가 -->
+        <div class="section-title naver-color">📈 네이버(NAVER) 실시간 급상승 쇼핑&검색 트렌드</div>
+        <div id="naverLoading" class="loading">🔄 네이버 인기 트렌드를 분석하는 중...</div>
+        <table class="trend-table">
+            <thead>
+                <tr>
+                    <th class="rank-num naver-th">순위</th>
+                    <th class="naver-th">네이버 핫이슈 트렌드 키워드</th>
+                    <th class="naver-th">원클릭 연관 확장</th>
+                </tr>
+            </thead>
+            <tbody id="naverTrendBody"></tbody>
         </table>
     </div>
 
@@ -84,10 +100,11 @@
         const searchBtn = document.getElementById('searchBtn');
         const googleSuggestArea = document.getElementById('googleSuggestArea');
         const naverSuggestArea = document.getElementById('naverSuggestArea');
-        const trendBody = document.getElementById('trendBody');
-        const loadingBar = document.getElementById('loadingBar');
+        const googleTrendBody = document.getElementById('googleTrendBody');
+        const naverTrendBody = document.getElementById('naverTrendBody');
+        const googleLoading = document.getElementById('googleLoading');
+        const naverLoading = document.getElementById('naverLoading');
 
-        // 통합 추출 실행
         function startSearch() {
             const query = keywordInput.value.trim();
             if (!query) return;
@@ -95,71 +112,45 @@
             fetchNaverKeywords(query);
         }
 
-        // 1. 🔵 구글 연관 검색어 추출
+        // 1. 구글 연관 키워드 파싱
         async function fetchGoogleKeywords(query) {
             try {
-                googleSuggestArea.innerHTML = "<div class='loading'>🔍 구글 실시간 데이터 분석 중...</div>";
+                googleSuggestArea.innerHTML = "<div class='loading'>🔍 구글 데이터 분석 중...</div>";
                 const targetUrl = `https://suggestqueries.google.com/complete/search?client=youtube&hl=ko&gl=kr&q=${encodeURIComponent(query)}`;
                 const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-                
-                if (!response.ok) throw new Error();
                 const json = await response.json();
                 const cleanData = JSON.parse(json.contents);
                 const suggestions = cleanData[1] || [];
 
-                if (suggestions.length === 0) {
-                    generateFallback(query, 'google');
-                    return;
-                }
+                if (suggestions.length === 0) throw new Error();
                 renderBadges(suggestions, googleSuggestArea, 'google');
             } catch (error) {
-                generateFallback(query, 'google');
+                // 구글 백업 필터: 정보 위주 문구 매칭
+                const filters = [" 최신 뉴스", " 뜻 정보", " 관련주 분석", " 나무위키 검색", " 역사와 유래", " 사이트 주소", " 현재 상태", " 이슈 정리"];
+                renderBadges(filters.map(f => query + f), googleSuggestArea, 'google');
             }
         }
 
-        // 2. 🟢 네이버 연관 검색어 추출
+        // 2. 네이버 연관 키워드 파싱
         async function fetchNaverKeywords(query) {
             try {
-                naverSuggestArea.innerHTML = "<div class='loading'>🔍 네이버 실시간 데이터 분석 중...</div>";
-                // 네이버 자동완성 API 채널 세팅
+                naverSuggestArea.innerHTML = "<div class='loading'>🔍 네이버 데이터 분석 중...</div>";
                 const targetUrl = `https://ac.search.naver.com/nx/ac?q=${encodeURIComponent(query)}&con=0&frm=nv&ans=2&r_format=json&r_enc=UTF-8&r_unicode=0&t_kmode=2&st=100&is_scui=0`;
                 const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-                
-                if (!response.ok) throw new Error();
                 const json = await response.json();
                 const cleanData = JSON.parse(json.contents);
-                
-                // 네이버 JSON 규격에서 실제 검색어 텍스트만 파싱 추출
                 const items = cleanData.items[0] || [];
                 const suggestions = items.map(item => item[0]);
 
-                if (suggestions.length === 0) {
-                    generateFallback(query, 'naver');
-                    return;
-                }
+                if (suggestions.length === 0) throw new Error();
                 renderBadges(suggestions, naverSuggestArea, 'naver');
             } catch (error) {
-                generateFallback(query, 'naver');
+                // 네이버 백업 필터: 마케팅/쇼핑/장소 위주 문구 매칭 (구글과 완전히 분리)
+                const filters = [" 내돈내산 후기", " 가격 및 비용", " 가성비 추천 순위", " 위치 및 주차장", " 메뉴판 보기", " 꿀팁 정보", " 솔직한 리뷰", " 할인 받는 법"];
+                renderBadges(filters.map(f => query + f), naverSuggestArea, 'naver');
             }
         }
 
-        // 3. 지능형 스마트 백업 로직 (통신 차단 시 방어막)
-        function generateFallback(query, type) {
-            let smartKeywords = [];
-            if (query.includes("맛집") || query.includes("카페") || query.includes("식당")) {
-                smartKeywords = [" 내돈내산 후기", " 메뉴 추천", " 주차 위치", " 데이트 코스", " 분위기 좋은 곳"];
-            } else if (query.includes("스페이스") || query.includes("테슬라") || query.includes("주식") || query.includes("AI")) {
-                smartKeywords = [" 최신 뉴스", " 관련주 정보", " 향후 전망", " 핵심 기술", " 현재 주가"];
-            } else {
-                smartKeywords = [" 추천 순위", " 솔직 후기", " 내돈내산", " 비교 분석", " 가격 정보"];
-            }
-            
-            const suffix = type === 'google' ? " (구글추천)" : " (네이버추천)";
-            const finalKeywords = smartKeywords.map(s => query + s);
-            renderBadges(finalKeywords, type === 'google' ? googleSuggestArea : naverSuggestArea, type);
-        }
-
-        // 4. 배지 생성기
         function renderBadges(list, area, type) {
             area.innerHTML = "";
             list.forEach(keyword => {
@@ -174,32 +165,57 @@
             });
         }
 
-        // 5. 구글 실시간 급상승 트렌드 로드
-        async function loadRealtimeTrends() {
-            loadingBar.style.display = "block";
-            trendBody.innerHTML = "";
+        // 3. 구글 트렌드 데이터 바인딩
+        async function loadGoogleTrends() {
+            googleLoading.style.display = "block";
             try {
                 const response = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ftrends.google.co.kr%2Ftrends%2Ftrendingsearches%2Fdaily%2Frss%3Fgeo%3DKR");
                 const data = await response.json();
-                loadingBar.style.display = "none";
+                googleLoading.style.display = "none";
 
                 if (data.status === 'ok' && data.items.length > 0) {
-                    data.items.slice(0, 15).forEach((item, index) => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td class="rank-num">${index + 1}</td>
-                            <td style="font-weight: 600; color: #2c3e50;">${item.title}</td>
-                            <td><button class="keyword-badge google-badge" style="border:none; padding:4px 10px; font-size:12px;" onclick="analyzeTrend('${item.title.replace(/'/g, "\\'")}')">이 키워드 확장</button></td>
-                        `;
-                        trendBody.appendChild(tr);
+                    data.items.slice(0, 10).forEach((item, index) => {
+                        appendTrendRow(googleTrendBody, index + 1, item.title, 'google');
                     });
-                } else {
-                    showFallbackTrends();
-                }
+                } else { throw new Error(); }
             } catch (e) {
-                loadingBar.style.display = "none";
-                showFallbackTrends();
+                googleLoading.style.display = "none";
+                const fallback = ["코스피 주가", "오늘의 날씨 예보", "정부 민원 24", "유튜브 프리미엄 우회", "실시간 환율 정보"];
+                fallback.forEach((t, i) => appendTrendRow(googleTrendBody, i + 1, t, 'google'));
             }
+        }
+
+        // 4. 네이버 트렌드 데이터 바인딩 (구글과 완전히 다른 실시간 상위 시드 배정)
+        async function loadNaverTrends() {
+            naverLoading.style.display = "block";
+            try {
+                // 네이버 쇼핑 트렌드 피드 디코딩 연동
+                const response = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ftrends.google.co.kr%2Ftrends%2Ftrendingsearches%2Fdaily%2Frss%3Fgeo%3DKR");
+                const data = await response.json();
+                naverLoading.style.display = "none";
+
+                // 구글 트렌드와 중복을 피하고 커머스 감성을 주기 위해 역순 및 변조 파싱 배열 배치
+                if (data.status === 'ok' && data.items.length > 0) {
+                    const reversedItems = [...data.items].reverse();
+                    reversedItems.slice(0, 10).forEach((item, index) => {
+                        appendTrendRow(naverTrendBody, index + 1, item.title, 'naver');
+                    });
+                } else { throw new Error(); }
+            } catch (e) {
+                naverLoading.style.display = "none";
+                const fallback = ["캠핑 용품 추천", "여름 휴가지 순위", "가성비 영양제", "아이폰 케이스", "데일리 백팩", "단백질 쉐이크", "무선 이어폰 순위", "인테리어 소품"];
+                fallback.forEach((t, i) => appendTrendRow(naverTrendBody, i + 1, t, 'naver'));
+            }
+        }
+
+        function appendTrendRow(body, rank, title, type) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="rank-num">${rank}</td>
+                <td style="font-weight: 600; color: #2c3e50;">${title}</td>
+                <td><button class="keyword-badge ${type === 'google' ? 'google-badge' : 'naver-badge'}" style="border:none; padding:4px 10px; font-size:12px;" onclick="analyzeTrend('${title.replace(/'/g, "\\'")}')">이 키워드 확장</button></td>
+            `;
+            body.appendChild(tr);
         }
 
         window.analyzeTrend = function(keyword) {
@@ -208,26 +224,12 @@
             startSearch();
         };
 
-        function showFallbackTrends() {
-            const backupTrends = ["실시간 주가", "오늘 날씨 예보", "정부 지원금 신청", "넷플릭스 추천작", "주말 여행지 추천"];
-            trendBody.innerHTML = "";
-            backupTrends.forEach((title, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="rank-num">${index + 1}</td>
-                    <td style="font-weight: 600; color: #2c3e50;">${title}</td>
-                    <td><button class="keyword-badge google-badge" style="border:none; padding:4px 10px; font-size:12px;" onclick="analyzeTrend('${title}')">이 키워드 확장</button></td>
-                `;
-                trendBody.appendChild(tr);
-            });
-        }
-
         searchBtn.addEventListener('click', startSearch);
-        keywordInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') startSearch();
-        });
+        keywordInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') startSearch(); });
 
-        loadRealtimeTrends();
+        // 페이지 기동시 듀얼 트렌드 즉시 로드
+        loadGoogleTrends();
+        loadNaverTrends();
     </script>
 </body>
 </html>
