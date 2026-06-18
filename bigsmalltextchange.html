@@ -156,7 +156,7 @@
             calculateText();
         }
 
-/* 💡 수정된 맞춤법 검사 연동 로직 (접속 에러 완벽 해결 버전) */
+/* 💡 유저들이 가장 좋아하는 부산대 맞춤법 검사기(최신 주소) 연동 로직 */
         function checkSpelling() {
             const text = textInput.value;
             if (text.trim() === '') {
@@ -164,18 +164,17 @@
                 return;
             }
             
-            // 1. 유저가 쓴 글을 백그라운드에서 자동으로 클립보드 복사
+            // 1. 유저가 작성한 글을 클립보드에 자동 복사
             navigator.clipboard.writeText(text).then(() => {
                 alert('작성하신 글이 자동으로 복사되었습니다!\n[확인]을 누르면 검사기로 이동합니다. 창이 열리면 Ctrl + V(붙여넣기)를 눌러주세요.');
                 
-                // 2. DNS 에러가 없는 국내에서 가장 안정적인 네이버 맞춤법 검사기로 안전하게 연동
-                window.open('https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query=맞춤법+검사기', '_blank');
+                // 2. 꼼꼼한 긴 글 검사에 최적화된 부산대 맞춤법 검사기 새 창 오픈
+                window.open('https://nara-speller.co.kr/', '_blank');
             }).catch(err => {
-                // 복사 에러 시에도 사이트 이동은 무조건 보장
-                window.open('https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query=맞춤법+검사기', '_blank');
+                // 브라우저 보안으로 복사가 실패하더라도 사이트 이동은 무조건 보장
+                window.open('https://nara-speller.co.kr/', '_blank');
             });
-        }
-        
+        }        
         
         function copyResult() {
             const text = textInput.value;
