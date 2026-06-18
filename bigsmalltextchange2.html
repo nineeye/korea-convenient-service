@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>대소문자 변환기 | 텍스트 마스터</title>
+    <style>/* 위 1번과 동일한 스타일 적용 */</style>
+</head>
+<body>
+    <div class="nav">
+        <a href="bigsmalltextchange1.html">글자수</a>
+        <a href="bigsmalltextchange2.html" class="active">대소문자</a>
+        <a href="bigsmalltextchange3.html">맞춤법</a>
+    </div>
+    <div class="container">
+        <h2>대소문자 변환</h2>
+        <textarea id="textInput"></textarea>
+        <button onclick="change('up')">대문자로</button>
+        <button onclick="change('low')">소문자로</button>
+    </div>
+    <script>
+        function change(type) {
+            const el = document.getElementById('textInput');
+            el.value = (type === 'up') ? el.value.toUpperCase() : el.value.toLowerCase();
+        }
+    </script>
+</body>
+</html>
