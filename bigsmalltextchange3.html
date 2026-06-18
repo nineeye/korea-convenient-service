@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>맞춤법 검사기</title>
+    <style>/* 위 1번과 동일한 스타일 적용 */</style>
+</head>
+<body>
+    <div class="nav">
+        <a href="bigsmalltextchange1.html">글자수</a>
+        <a href="bigsmalltextchange2.html">대소문자</a>
+        <a href="bigsmalltextchange3.html" class="active">맞춤법</a>
+    </div>
+    <div class="container">
+        <h2>맞춤법 검사</h2>
+        <textarea id="textInput"></textarea>
+        <button onclick="check()">✨ 맞춤법 검사하러 가기</button>
+    </div>
+    <script>
+        function check() {
+            const text = document.getElementById('textInput').value;
+            navigator.clipboard.writeText(text);
+            alert('글이 복사되었습니다. 창이 열리면 붙여넣기 하세요!');
+            window.open('https://nara-speller.co.kr/', '_blank');
+        }
+    </script>
+</body>
+</html>
