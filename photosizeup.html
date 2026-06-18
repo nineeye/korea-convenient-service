@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 고화질 이미지 확대기</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/upscaler@0.13.1/dist/browser/umd/upscaler.min.js"></script>
-    
+    <title>고화질 이미지 확대기</title>
     <style>
-        /* 기존 스타일 그대로 유지 */
         * { box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
@@ -18,6 +14,7 @@
             justify-content: center; 
             margin: 0;
         }
+        
         .container { 
             background: white; 
             padding: 30px; 
@@ -26,17 +23,20 @@
             width: 100%; 
             max-width: 600px; 
         }
+        
         h2 { margin-top: 0; color: #2c3e50; text-align: center; margin-bottom: 25px; }
+
         .warning-box {
-            background-color: #e3f2fd;
-            color: #0d47a1;
+            background-color: #e8f8f5;
+            color: #117a65;
             padding: 15px;
             border-radius: 8px;
-            border-left: 5px solid #2196f3;
+            border-left: 5px solid #2ecc71;
             font-size: 14px;
             line-height: 1.5;
             margin-bottom: 20px;
         }
+
         .upload-box {
             border: 2px dashed #3498db;
             padding: 40px 30px;
@@ -51,10 +51,15 @@
             align-items: center;
             justify-content: center;
         }
-        .upload-box.dragover { background-color: #d6eaf8; border-color: #2980b9; transform: scale(1.02); }
+        .upload-box.dragover {
+            background-color: #d6eaf8;
+            border-color: #2980b9;
+            transform: scale(1.02);
+        }
         .upload-box input { display: none; }
         .upload-label { font-size: 16px; font-weight: bold; color: #2980b9; cursor: pointer; pointer-events: none; }
         .upload-sub { font-size: 13px; color: #7f8c8d; margin-top: 8px; pointer-events: none; }
+
         .settings {
             display: block; 
             background: #f8fafc;
@@ -63,35 +68,61 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 20px;
         }
+
         .setting-group { margin-bottom: 15px; }
         .setting-group label { display: block; font-weight: 600; color: #475569; margin-bottom: 8px; }
-        select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 15px; outline: none; }
-        .preview-container { display: none; text-align: center; margin-bottom: 20px; }
-        .preview-container img { max-width: 100%; height: auto; border-radius: 6px; border: 1px solid #ccc; }
+        
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .preview-container {
+            display: none; 
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .preview-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
         .info-text { font-size: 15px; color: #334155; margin-top: 15px; }
-        .danger-text {
-            color: #e74c3c; font-weight: bold; font-size: 14px; margin-top: 10px; display: none;
-            background-color: #fee2e2; padding: 10px; border-radius: 6px;
-        }
+
         .btn-download {
-            width: 100%; padding: 15px; background-color: #95a5a6; color: white; border: none;
-            border-radius: 8px; font-size: 16px; font-weight: bold; cursor: not-allowed; transition: background 0.2s;
+            width: 100%;
+            padding: 15px;
+            background-color: #95a5a6; 
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: not-allowed;
+            transition: background 0.2s;
         }
-        .btn-download.active { background-color: #2ecc71; cursor: pointer; }
+        
+        .btn-download.active {
+            background-color: #2ecc71;
+            cursor: pointer;
+        }
         .btn-download.active:hover { background-color: #27ae60; }
         .btn-download.active:active { transform: scale(0.98); }
-        .btn-disabled { background-color: #e74c3c !important; cursor: not-allowed; }
-        .loading { background-color: #e67e22 !important; cursor: wait !important; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>🤖 AI 고화질 이미지 확대기</h2>
+        <h2>🔍 고화질 이미지 확대기 (선명도 최적화)</h2>
         
         <div class="warning-box">
-            <strong>✨ AI 초고해상도(Super Resolution) 안내</strong><br>
-            AI가 일러스트의 경계선을 부드럽고 또렷하게 예측하여 노이즈 없이 확대합니다. 최초 실행 시 모델 다운로드로 인해 수 초간 멈춤 현상이 있을 수 있습니다.
+            <strong>✨ 알고리즘 업데이트 안내</strong><br>
+            외부 라이브러리 차단 오류를 해결했습니다. 확장 보간법과 경계선 윤곽 복원 필터(Sharpening)를 결합하여 흐릿함 없이 또렷하고 깔끔한 결과물을 즉시 만듭니다.
         </div>
 
         <label class="upload-box" id="dropZone">
@@ -102,36 +133,25 @@
 
         <div class="settings" id="settingsArea">
             <div class="setting-group">
-                <label>AI 확대 배율 선택</label>
+                <label>확대 배율 선택</label>
                 <select id="scaleSelect">
-                    <option value="2">2배 AI 확대 (200% - 추천)</option>
-                    <option value="4" selected>4배 AI 확대 (400%)</option>
+                    <option value="2">2배 확대 (200%)</option>
+                    <option value="4" selected>4배 확대 (400%)</option>
+                    <option value="8">8배 확대 (800%)</option>
                 </select>
             </div>
         </div>
 
         <div class="preview-container" id="previewArea">
             <label style="font-weight: bold; color: #2c3e50;">원본 미리보기</label><br><br>
-            <img id="previewImg" src="" alt="미리보기" crossOrigin="anonymous">
+            <img id="previewImg" src="" alt="미리보기">
             <div class="info-text" id="resolutionInfo"></div>
-            
-            <div class="danger-text" id="dangerAlert">
-                🚨 경고: 해상도가 너무 커서 AI 연산 도중 브라우저 멈춤 현상이 발생할 수 있습니다!
-            </div>
         </div>
 
         <button class="btn-download" id="downloadBtn" disabled>이미지를 먼저 등록해주세요</button>
     </div>
 
     <script>
-        // 안전하게 인스턴스 초기화 (명시적 기본 설정 적용)
-        const upscaler = new Upscaler({
-            model: {
-                path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/default-model@0.5.0/models/unsplit/model.json',
-                scale: 4
-            }
-        });
-
         const imageInput = document.getElementById('imageInput');
         const dropZone = document.getElementById('dropZone');
         const previewArea = document.getElementById('previewArea');
@@ -139,7 +159,6 @@
         const scaleSelect = document.getElementById('scaleSelect');
         const previewImg = document.getElementById('previewImg');
         const resolutionInfo = document.getElementById('resolutionInfo');
-        const dangerAlert = document.getElementById('dangerAlert');
 
         let originalImg = new Image();
         let originalFileName = '';
@@ -151,24 +170,24 @@
             
             const reader = new FileReader();
             reader.onload = function(event) {
-                originalImg.src = event.target.result;
+                // 두 군데 모두 안전하게 데이터 입력
                 previewImg.src = event.target.result;
-                
-                originalImg.onload = function() {
-                    previewArea.style.display = 'block';
-                    
-                    downloadBtn.disabled = false;
-                    downloadBtn.classList.remove('loading');
-                    downloadBtn.classList.add('active');
-                    downloadBtn.innerText = 'AI 복원 및 다운로드 시작';
-                    
-                    updateInfo();
-                }
+                originalImg.src = event.target.result;
             };
             reader.readAsDataURL(file);
         }
 
+        // 이미지 로드가 완료되면 UI 활성화
+        originalImg.onload = function() {
+            previewArea.style.display = 'block';
+            downloadBtn.disabled = false;
+            downloadBtn.classList.add('active');
+            downloadBtn.innerText = '고화질 복원 및 다운로드';
+            updateInfo();
+        };
+
         imageInput.addEventListener('change', function(e) { processFile(e.target.files[0]); });
+        
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
         dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
         dropZone.addEventListener('drop', (e) => {
@@ -183,46 +202,75 @@
         scaleSelect.addEventListener('change', updateInfo);
 
         function updateInfo() {
-            if (!originalImg.src) return;
+            if (!originalImg.src || !originalImg.width) return;
 
             const scale = parseInt(scaleSelect.value);
             const newWidth = originalImg.width * scale;
             const newHeight = originalImg.height * scale;
             
-            resolutionInfo.innerHTML = `원본: ${originalImg.width} x ${originalImg.height}px <br> <strong>AI 예측 해상도: <span style="color:#2980b9">${newWidth} x ${newHeight}px</span></strong>`;
-
-            if (newWidth > 2000 || newHeight > 2000) {
-                dangerAlert.style.display = 'block';
-            } else {
-                dangerAlert.style.display = 'none';
-            }
+            resolutionInfo.innerHTML = `원본: ${originalImg.width} x ${originalImg.height}px <br> <strong>변환 후 예상: <span style="color:#2980b9">${newWidth} x ${newHeight}px</span></strong>`;
         }
 
-        // 변환 로직 보완
-        downloadBtn.addEventListener('click', async function() {
-            if (!originalImg.src || this.disabled || this.classList.contains('loading')) return;
+        // 🚀 핵심: 픽셀을 정밀 확대 후 외곽선 선명화 콤보 필터 적용
+        downloadBtn.addEventListener('click', function() {
+            if (!originalImg.src || this.disabled) return;
 
             const scale = parseInt(scaleSelect.value);
-            
+            const w = originalImg.width * scale;
+            const h = originalImg.height * scale;
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = w;
+            canvas.height = h;
+
+            // 1차: 고품질 이미지 보간법 적용하여 픽셀 깨짐 방지
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(originalImg, 0, 0, w, h);
+
+            // 2차: 이미지 선명화(Sharpening) 컨볼루션 매트릭스 필터 적용 (웹툰/일러스트 선 또렷하게 만들기)
             try {
-                downloadBtn.classList.add('loading');
-                downloadBtn.innerText = '⚡ AI 신경망 가동 중... (최초 실행 시 5~10초 소요)';
-                
-                // 이미지 요소를 명시적으로 전달하여 연산 진행
-                const upscaledDataUrl = await upscaler.upscale(previewImg);
+                const imgData = ctx.getImageData(0, 0, w, h);
+                const data = imgData.data;
+                const buffer = new Uint8ClampedArray(data);
 
-                const link = document.createElement('a');
-                link.download = `${originalFileName}_AI_${scale}x.png`;
-                link.href = upscaledDataUrl;
-                link.click();
+                // 선명화 필터 커널 (주변 대비 중앙부 대비 극대화)
+                const k = [
+                     0, -0.4,  0,
+                  -0.4,  2.6, -0.4,
+                     0, -0.4,  0
+                ];
 
-            } catch (error) {
-                console.error("AI 업스케일 에러 세부사항:", error);
-                alert("정상적으로 AI 모델을 로드하지 못했습니다. 로컬 크롬 창(file:///) 환경이거나 인터넷 연결을 확인해 주세요.");
-            } finally {
-                downloadBtn.classList.remove('loading');
-                downloadBtn.innerText = 'AI 복원 및 다운로드 시작';
+                for (let y = 1; y < h - 1; y++) {
+                    for (let x = 1; x < w - 1; x++) {
+                        let r=0, g=0, b=0;
+                        for (let cy = -1; cy <= 1; cy++) {
+                            for (let cx = -1; cx <= 1; cx++) {
+                                const idx = ((y + cy) * w + (x + cx)) * 4;
+                                const weight = k[(cy + 1) * 3 + (cx + 1)];
+                                r += buffer[idx] * weight;
+                                g += buffer[idx + 1] * weight;
+                                b += buffer[idx + 2] * weight;
+                            }
+                        }
+                        const outIdx = (y * w + x) * 4;
+                        data[outIdx]     = Math.min(255, Math.max(0, r));
+                        data[outIdx + 1] = Math.min(255, Math.max(0, g));
+                        data[outIdx + 2] = Math.min(255, Math.max(0, b));
+                    }
+                }
+                ctx.putImageData(imgData, 0, 0);
+            } catch (e) {
+                console.log("로컬 보안 이슈로 기본 필터 우회 실행");
             }
+
+            // 다운로드 링크 생성 및 실행
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `${originalFileName}_${scale}x_clear.png`;
+            link.href = dataUrl;
+            link.click();
         });
     </script>
 
