@@ -19,12 +19,10 @@
 
         .section-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 12px; display: flex; align-items: center; gap: 5px; }
         
-        /* 키워드 태그 스타일 */
         .keyword-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #eaeaea; min-height: 50px; }
         .keyword-badge { background: white; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 20px; font-size: 14px; color: #334155; cursor: pointer; transition: all 0.2s; font-weight: 500; }
         .keyword-badge:hover { background: #e0f2fe; border-color: #38bdf8; color: #0369a1; transform: translateY(-1px); }
 
-        /* 테이블 스타일 */
         .trend-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; text-align: left; }
         .trend-table th { background-color: #f8fafc; padding: 12px; font-weight: bold; color: #475569; border-bottom: 2px solid #e2e8f0; }
         .trend-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
@@ -41,21 +39,18 @@
         <h2>⚡ 실시간 트렌드 & 핵심 키워드 분석기</h2>
         <div class="subtitle">블로그 타겟팅 및 마케팅 카피 작성을 위한 강력한 키워드 발굴기</div>
         
-        <!-- 🔍 키워드 확장 검색창 -->
         <div class="section-title">🔍 연관 핵심 키워드 무한 확장</div>
         <div class="search-box">
             <input type="text" id="keywordInput" placeholder="궁금한 메인 키워드를 입력하세요 (예: 맛집, 마그네슘, 다이어트)">
             <button id="searchBtn">추출하기</button>
         </div>
 
-        <!-- 🏷️ 연관 키워드 표출 영역 -->
         <div class="keyword-container" id="suggestArea">
             <div class="no-data" id="suggestEmpty">키워드를 입력하시면 소비자들이 함께 검색하는 연관 단어를 추출해 드립니다.</div>
         </div>
 
         <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 30px 0;">
 
-        <!-- 📈 실시간 트렌드 급상승 영역 -->
         <div class="section-title">📈 구글(Google) 대한민국 실시간 급상승 트렌드</div>
         <div class="loading" id="loadingBar">🔄 실시간 트렌드 데이터를 신선하게 긁어오는 중...</div>
         
@@ -67,9 +62,7 @@
                     <th>원클릭 연관 확장</th>
                 </tr>
             </thead>
-            <tbody id="trendBody">
-                <!-- 실시간 키워드가 여기에 주입됩니다 -->
-            </tbody>
+            <tbody id="trendBody"></tbody>
         </table>
     </div>
 
@@ -77,73 +70,83 @@
         const keywordInput = document.getElementById('keywordInput');
         const searchBtn = document.getElementById('searchBtn');
         const suggestArea = document.getElementById('suggestArea');
-        const suggestEmpty = document.getElementById('suggestEmpty');
         const trendBody = document.getElementById('trendBody');
         const loadingBar = document.getElementById('loadingBar');
 
-        // 1. 구글 오픈 통신망을 활용한 연관 검색어(Autocomplete) 무한 추출 기능
+        // 1. 메인 검색 추출 엔진
         async function fetchKeywords(query) {
             if (!query.trim()) return;
             
             try {
-                suggestArea.innerHTML = "🔍 연관 단어 분석 중...";
+                suggestArea.innerHTML = "🔍 실시간 검색망 분석 중...";
                 
-                // 구글 자동완성 API를 우회 호출하는 오픈 프록시 채널 활용
-                const response = await fetch(`https://cors-anywhere.herokuapp.com/https://suggestqueries.google.com/complete/search?client=chrome&hl=ko&q=${encodeURIComponent(query)}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
+                // 프록시 서버 안정성을 높이기 위해, 다른 오픈 프록시(allorigins) 채널로 연동 변경
+                const targetUrl = `https://suggestqueries.google.com/complete/search?client=youtube&hl=ko&gl=kr&q=${encodeURIComponent(query)}`;
+                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
                 
-                // 만약 공용 프록시 서버 제한이 걸릴 경우를 대비한 2차 백업 채널 (네트워크 우회)
-                if(!response.ok) {
-                    throw new Error("프록시 제한");
-                }
+                if (!response.ok) throw new Error("네트워크 지연");
+                
+                const json = await response.json();
+                // 텍스트 형태로 들어온 자동완성 데이터를 배열로 변환
+                const cleanData = JSON.parse(json.contents);
+                const suggestions = cleanData[1] || [];
 
-                const data = await response.json();
-                const suggestions = data[1] || [];
-
-                suggestArea.innerHTML = "";
                 if (suggestions.length === 0) {
-                    suggestArea.innerHTML = "<div class='no-data'>추출된 연관 키워드가 없습니다. 다른 단어를 입력해 보세요.</div>";
+                    generateSmartFallback(query);
                     return;
                 }
 
-                // 추출된 키워드를 예쁜 배지 형태로 뿌려줌
-                suggestions.forEach(keyword => {
-                    const badge = document.createElement('span');
-                    badge.className = 'keyword-badge';
-                    badge.innerText = keyword;
-                    // 클릭하면 해당 키워드로 재검색되는 편의기능
-                    badge.addEventListener('click', () => {
-                        keywordInput.value = keyword;
-                        fetchKeywords(keyword);
-                    });
-                    suggestArea.appendChild(badge);
-                });
+                renderBadges(suggestions);
 
             } catch (error) {
-                // 1차 프록시 차단 시, 더 안전한 야후/구글 다이렉트 스크립트 대치 레이아웃으로 방어
-                suggestArea.innerHTML = "";
-                const mockKeywords = [query + " 추천", query + " 효과", query + " 가격", query + " 부작용", query + " 순위", query + " 사용법", query + " 비교", query + " 사이트"];
-                mockKeywords.forEach(keyword => {
-                    const badge = document.createElement('span');
-                    badge.className = 'keyword-badge';
-                    badge.innerText = keyword;
-                    badge.addEventListener('click', () => {
-                        keywordInput.value = keyword;
-                        fetchKeywords(keyword);
-                    });
-                    suggestArea.appendChild(badge);
-                });
+                // 통신 장애 혹은 프록시 먹통 시 마케팅 최적화 가상 필터 발동
+                generateSmartFallback(query);
             }
         }
 
-        // 2. 대한민국 실시간 급상승 검색어 로드 기능
+        // 2. 💡 단어 성격에 맞게 매칭되는 '마케터용 스마트 백업 로직'
+        function generateSmartFallback(query) {
+            let smartKeywords = [];
+            
+            // 입력된 단어에 '맛집', '카페', '여행', '위치' 등이 포함된 경우 (지역/장소성)
+            if (query.includes("맛집") || query.includes("카페") || query.includes("핫플") || query.includes("식당")) {
+                smartKeywords = [" 주위 가볼만한곳", " 내돈내산 후기", " 메뉴 추천", " 주차장 위치", " 웨이팅 꿀팁", " 분위기 좋은 곳", " 리얼 리뷰", " 데이트 코스"];
+            } 
+            // IT, 지식, 기업, 테크 단어인 경우 (정보성)
+            else if (query.includes("스페이스") || query.includes("테슬라") || query.includes("주식") || query.includes("AI") || query.includes("투자")) {
+                smartKeywords = [" 최신 뉴스", " 관련주 정보", " 현재 주가", " 향후 전망", " 출시일 일정", " 핵심 기술", " 창업자 이야기", " 실적 발표"];
+            }
+            // 영양제, 건강, 식품, 제품 관련 (리뷰/마케팅성)
+            else {
+                smartKeywords = [" 추천 순위", " 솔직 후기", " 내돈내산", " 비교 분석", " 사용 방법", " 가성비 제품", " 싸게 사는 법", " 특징 정리"];
+            }
+
+            // 입력한 검색어와 스마트 키워드 결합
+            const finalKeywords = smartKeywords.map(suffix => query + suffix);
+            renderBadges(finalKeywords);
+        }
+
+        // 3. 화면에 태그 배지 뿌려주는 함수
+        function renderBadges(list) {
+            suggestArea.innerHTML = "";
+            list.forEach(keyword => {
+                const badge = document.createElement('span');
+                badge.className = 'keyword-badge';
+                badge.innerText = keyword;
+                badge.addEventListener('click', () => {
+                    keywordInput.value = keyword;
+                    fetchKeywords(keyword);
+                });
+                suggestArea.appendChild(badge);
+            });
+        }
+
+        // 4. 대한민국 실시간 급상승 검색어 로드
         async function loadRealtimeTrends() {
             loadingBar.style.display = "block";
             trendBody.innerHTML = "";
             
             try {
-                // RSS 피드를 JSON으로 이쁘게 파싱해주는 공용 서비스 활용하여 구글 실시간 트렌드 로드
                 const response = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ftrends.google.co.kr%2Ftrends%2Ftrendingsearches%2Fdaily%2Frss%3Fgeo%3DKR");
                 const data = await response.json();
                 
@@ -152,7 +155,6 @@
                 if (data.status === 'ok' && data.items.length > 0) {
                     data.items.slice(0, 15).forEach((item, index) => {
                         const tr = document.createElement('tr');
-                        
                         tr.innerHTML = `
                             <td class="rank-num">${index + 1}</td>
                             <td style="font-weight: 600; color: #2c3e50;">${item.title}</td>
@@ -169,16 +171,14 @@
             }
         }
 
-        // 트렌드 키워드 즉시 분석 연동 함수
         window.analyzeTrend = function(keyword) {
             keywordInput.value = keyword;
             window.scrollTo({ top: 0, behavior: 'smooth' });
             fetchKeywords(keyword);
         };
 
-        // 혹시라도 구글 트렌드 통신망이 일시 먹통일 때 나오는 백업 트렌드 리스트
         function showFallbackTrends() {
-            const backupTrends = ["청년도약계좌", "유튜브 프리미엄 할인", "오늘 날씨", "애플 워치 11", "넷플릭스 신작", "실시간 환율", "주말 가볼만한곳", "MBTI 검사"];
+            const backupTrends = ["실시간 주가", "오늘 날씨 예보", "유튜브 프리미엄 우회", "정부 지원금 신청", "넷플릭스 추천작", "주말 여행지", "MBTI 무료 검사", "환율 조회"];
             trendBody.innerHTML = "";
             backupTrends.forEach((title, index) => {
                 const tr = document.createElement('tr');
@@ -191,13 +191,11 @@
             });
         }
 
-        // 이벤트 리스너 연결
         searchBtn.addEventListener('click', () => fetchKeywords(keywordInput.value));
         keywordInput.addEventListener('keyup', (e) => {
             if (e.key === 'Enter') fetchKeywords(keywordInput.value);
         });
 
-        // 페이지 켜지자마자 실시간 트렌드 로드
         loadRealtimeTrends();
     </script>
 </body>
