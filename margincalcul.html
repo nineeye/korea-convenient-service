@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 실시간 퍼센트 & 마진 계산기</title>
+    <style>
+        body {
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .wrapper {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        }
+        h2 {
+            text-align: center;
+            color: #1e293b;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .calc-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+        }
+        .calc-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #3b82f6;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        input {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100px;
+            flex-grow: 1;
+            text-align: right;
+            outline: none;
+        }
+        input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        span {
+            font-size: 15px;
+            color: #475569;
+            font-weight: 500;
+        }
+        .result-box {
+            background: #eddfffe;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 15px;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #2563eb;
+        }
+        .margin-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+        .margin-box h3 {
+            color: #16a34a;
+        }
+        .margin-box .highlight {
+            color: #16a34a;
+        }
+        .info-text {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <h2>📊 실시간 퍼센트 & 마진 계산기</h2>
+
+    <div class="calc-section">
+        <h3>💰 1. 퍼센트 & 할인율 계산</h3>
+        <div class="input-group">
+            <input type="number" id="pPrice" placeholder="35000" oninput="calcPercent()">
+            <span>원 의</span>
+            <input type="number" id="pPercent" placeholder="15" oninput="calcPercent()">
+            <span>% 는?</span>
+        </div>
+        
+        <div class="result-box" id="percentResult">
+            금액 입력 시 실시간으로 계산됩니다.
+        </div>
+    </div>
+
+    <div class="calc-section margin-box">
+        <h3>📈 2. 쇼핑몰 마진율(판매가) 계산</h3>
+        <div class="input-group">
+            <span>원가</span>
+            <input type="number" id="mCost" placeholder="5000" oninput="calcMargin()">
+            <span>원, 목표 마진</span>
+            <input type="number" id="mMargin" placeholder="25" oninput="calcMargin()">
+            <span>%</span>
+        </div>
+        
+        <div class="result-box" id="marginResult">
+            금액 입력 시 실시간으로 계산됩니다.
+        </div>
+    </div>
+</div>
+
+<script>
+    // 숫자 콤마 포맷팅 함수
+    function formatNum(num) {
+        if(isNaN(num) || !isFinite(num)) return "0";
+        return Math.round(num).toLocaleString('ko-KR');
+    }
+
+    // 1. 퍼센트 계산 로직
+    function calcPercent() {
+        const price = parseFloat(document.getElementById('pPrice').value);
+        const percent = parseFloat(document.getElementById('pPercent').value);
+        const resultDiv = document.getElementById('percentResult');
+
+        if (!price || isNaN(percent)) {
+            resultDiv.innerHTML = "숫자를 입력해주세요.";
+            return;
+        }
+
+        const calcValue = price * (percent / 100);
+        const discountPrice = price - calcValue;
+        const addPrice = price + calcValue;
+
+        resultDiv.innerHTML = `
+            • <b>${percent}% 선점 금액:</b> <span class="highlight">${formatNum(calcValue)}원</span><br>
+            • <b>${percent}% 할인 시 (최종가):</b> <span class="highlight">${formatNum(discountPrice)}원</span><br>
+            • <b>${percent}% 인상 시 (최종가):</b> <span class="highlight">${formatNum(addPrice)}원</span>
+        `;
+    }
+
+    // 2. 마진 계산 로직
+    function calcMargin() {
+        const cost = parseFloat(document.getElementById('mCost').value);
+        const marginRate = parseFloat(document.getElementById('mMargin').value);
+        const resultDiv = document.getElementById('marginResult');
+
+        if (!cost || isNaN(marginRate)) {
+            resultDiv.innerHTML = "숫자를 입력해주세요.";
+            return;
+        }
+
+        if (marginRate >= 100) {
+            resultDiv.innerHTML = "<span style='color:red;'>마진율은 100% 미만으로 입력해주세요!</span>";
+            return;
+        }
+
+        // A. 쇼핑몰 표준 (판매가 기준 마진) -> 판매가 = 원가 / (1 - 마진율)
+        const sellPriceStandard = cost / (1 - (marginRate / 100));
+        const profitStandard = sellPriceStandard - cost;
+
+        // B. 마크업 기준 (원가 대비 마진) -> 판매가 = 원가 * (1 + 마진율)
+        const sellPriceMarkup = cost * (1 + (marginRate / 100));
+        const profitMarkup = sellPriceMarkup - cost;
+
+        resultDiv.innerHTML = `
+            <b>[방법 A] 매출 총이익률 기준 (추천! 쇼핑몰 표준)</b><br>
+            • <b>적정 판매가:</b> <span class="highlight">${formatNum(sellPriceStandard)}원</span><br>
+            • <b>순수 남는 마진:</b> ${formatNum(profitStandard)}원 (전체 매출의 ${marginRate}%)
+            <div class="info-text">※ 수수료/할인을 고려해 대다수 쇼핑몰이 쓰는 방식입니다.</div>
+            <hr style='border: 0; border-top: 1px solid #bbf7d0; margin: 10px 0;'>
+            <b>[방법 B] 원가 마크업 기준 (원가에 단순 마진 추가)</b><br>
+            • <b>적정 판매가:</b> <span class="highlight">${formatNum(sellPriceMarkup)}원</span><br>
+            • <b>순수 남는 마진:</b> ${formatNum(profitMarkup)}원
+        `;
+    }
+</script>
+
+</body>
+</html>
