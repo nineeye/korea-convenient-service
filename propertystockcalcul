@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>올인원 메가 계산기 | 퍼센트·재테크·부동산 세금 실시간 연산</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+            padding: 30px 15px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .title-area {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .title-area h2 {
+            font-size: 26px;
+            color: #1e3a8a;
+            margin-bottom: 6px;
+        }
+
+        .title-area p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        /* 💡 상단 탭 메뉴 스타일 */
+        .tab-menu {
+            display: flex;
+            background: #e2e8f0;
+            padding: 6px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            gap: 5px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            background: #ffffff;
+            color: #2563eb;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        /* 탭 콘텐츠 기본 숨김 */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 850px) {
+            .tab-content.active {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 계산기 카드 공통 스타일 */
+        .calc-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .calc-card h3 {
+            font-size: 15px;
+            color: #334155;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        /* 시원하게 늘어나는 인풋 라인 */
+        .input-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .input-line input, .input-line select {
+            flex: 1;
+            min-width: 90px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 16px; /* iOS 자동 줌 방지 */
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s;
+            text-align: right;
+        }
+
+        .input-line input:focus, .input-line select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .input-line select {
+            text-align: left;
+            flex: 0 0 110px;
+            background-color: white;
+        }
+
+        .unit-text {
+            font-size: 14px;
+            color: #475569;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* 결과 영역 */
+        .result-box {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px dashed #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 21px;
+            font-weight: 800;
+            color: #2563eb;
+            word-break: break-all;
+            text-align: right;
+        }
+
+        .result-sub {
+            font-size: 12px;
+            color: #64748b;
+            text-align: right;
+            margin-top: 2px;
+        }
+
+        .up { color: #dc2626; }
+        .down { color: #2563eb; }
+        .neutral { color: #10b981; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="title-area">
+        <h2>🛠️ 올인원 메가 유틸리티 계산기</h2>
+        <p>필요한 탭을 선택하세요. 모든 수식은 수천억 대용량 실시간 연산을 지원합니다.</p>
+    </div>
+
+    <!-- 💡 상단 컨트롤 탭 메뉴 -->
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="openTab(event, 'tab-percent')">📊 퍼센트 & 비즈니스 (8종)</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-finance')">💰 주식 & 예적금 금융 (4종)</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-tax')">🏢 부동산 간이 세금 (2종)</button>
+    </div>
+
+    <!-- ==================== TAB 1: 퍼센트 & 비즈니스 ==================== -->
+    <div id="tab-percent" class="tab-content active">
+        <div class="calc-card">
+            <h3>💡 전체의 몇 %는 얼마?</h3>
+            <div class="input-line"><input type="number" id="v1_1" placeholder="전체값" oninput="calc1()"><span class="unit-text">의</span><input type="number" id="v1_2" placeholder="퍼센트" oninput="calc1()"><span class="unit-text">%는?</span></div>
+            <div class="result-box"><span class="result-label">계산 결과</span><span class="result-value" id="res1">0</span></div>
+        </div>
+        <div class="calc-card">
+            <h3>💡 특정 값은 전체의 몇 %?</h3>
+            <div class="input-line"><input type="number" id="v2_1" placeholder="전체값" oninput="calc2()"><span class="unit-text">중에서</span><input type="number" id="v2_2" placeholder="특정값" oninput="calc2()"><span class="unit-text">은(는)?</span></div>
+            <div class="result-box"><span class="result-label">비율 결과</span><span class="result-value" id="res2">0 %</span></div>
+        </div>
+        <div class="calc-card">
+            <h3>💡 값이 변했을 때 증감률은?</h3>
+            <div class="input-line"><input type="number" id="v3_1" placeholder="처음값" oninput="calc3()"><span class="unit-text">이(가)</span><input type="number" id="v3_2" placeholder="나중값" oninput="calc3()"><span class="unit-text">(으)로 변하면?</span></div>
+            <div class="result-box"><span class="result-label">증감률 결과</span><span class="result-value" id="res3">0 %</span></div>
+        </div>
+        <div class="calc-card">
+            <h3>💡 값에서 몇 % 증가/감소하면?</h3>
+            <div class="input-line"><input type="number" id="v4_1" placeholder="기준값" oninput="calc4()"><span class="unit-text">에서</span><input type="number" id="v4_2" placeholder="퍼센트" oninput="calc4()"><select id="v4_type" onchange="calc4()"><option value="up">지정% 증가</option><option value="down">지정% 감소</option></select></div>
+            <div class="result-box"><span class="result-label">최종 결과값</span><span class="result-value" id="res4">0</span></div>
+        </div>
+        <div class="calc-card">
+            <h3>💡 특정 금액이 몇 %라면, 전체 100%는?</h3>
+            <div class="input-line"><input type="number" id="v5_1" placeholder="일부값" oninput="calc5()"><span class="unit-text">이(가) 전체의</span><input type="number" id="v5_2" placeholder="퍼센트" oninput="calc5()"><span class="unit-text">%라면?</span></div>
+            <div class="result-box"><span class="result-label">원래 전체값</span><span class="result-value" id="res5">0</span></div>
+        </div>
+        <div class="calc-card">
+            <h3>💡 정가에서 몇 % 세일하면 얼마?</h3>
+            <div class="input-line"><input type="number" id="v6_1" placeholder="정가" oninput="calc6()"><span class="unit-text">원에서</span><input type="number" id="v6_2" placeholder="할인율" oninput="calc6()"><span class="unit-text">% 세일 시</span></div>
+            <div class="result-box"><span class="result-label">할인가 (아낀돈)</span><div><div class="result-value up" id="res6">0 원</div><div class="result-sub" id="res6_sub">할인액: 0원</div></div></div>
+        </div>
+        <div class="calc-card">
+            <h3>💡 목표치 대비 현재 달성률은?</h3>
+            <div class="input-line"><input type="number" id="v7_1" placeholder="목표값" oninput="calc7()"><span class="unit-text">중에서</span><input type="number" id="v7_2" placeholder="현재값" oninput="calc7()"><span class="unit-text">만큼 달성 시</span></div>
+            <div class="result-box"><span class="result-label">현재 달성률</span><span class="result-value" id="res7">0 %</span></div>
+        </div>
+        <div class="calc-card">
+            <h3>💡 원가에 마진 붙인 판매가 계산</h3>
+            <div class="input-line"><input type="number" id="v8_1" placeholder="물건원가" oninput="calc8()"><span class="unit-text">원에 마진</span><input type="number" id="v8_2" placeholder="마진율" oninput="calc8()"><span class="unit-text">% 확보 시</span></div>
+            <div class="result-box"><span class="result-label">추천 판매가 (마진액)</span><div><div class="result-value neutral" id="res8">0 원</div><div class="result-sub" id="res8_sub">순수익: 0원</div></div></div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB 2: 주식 & 금융 재테크 ==================== -->
+    <div id="tab-finance" class="tab-content">
+        <!-- 9. 주식/ETF 물타기 계산기 -->
+        <div class="calc-card">
+            <h3>📊 주식/ETF 물타기 평단가 계산기</h3>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <div class="input-line"><input type="number" id="f1_p1" placeholder="현재 평단가" oninput="calcFinance1()"><span class="unit-text">원에</span><input type="number" id="f1_q1" placeholder="보유 수량" oninput="calcFinance1()"><span class="unit-text">주 보유 중</span></div>
+                <div class="input-line"><input type="number" id="f1_p2" placeholder="추가 매수가" oninput="calcFinance1()"><span class="unit-text">원에</span><input type="number" id="f1_q2" placeholder="추가 수량" oninput="calcFinance1()"><span class="unit-text">주 더 사면?</span></div>
+            </div>
+            <div class="result-box"><span class="result-label">물타기 후 최종 평단</span><div><div class="result-value neutral" id="f1_res">0 원</div><div class="result-sub" id="f1_sub">총 보유 주수: 0주 / 총 투자금: 0원</div></div></div>
+        </div>
+
+        <!-- 10. 예적금 단리/복리 계산기 -->
+        <div class="calc-card">
+            <h3>💰 예적금 만기 이자 계산기 (단리/복리)</h3>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <div class="input-line"><input type="number" id="f2_money" placeholder="예치 원금" oninput="calcFinance2()"><span class="unit-text">원을</span><input type="number" id="f2_rate" placeholder="연이자율" oninput="calcFinance2()"><span class="unit-text">%로</span></div>
+                <div class="input-line"><input type="number" id="f2_period" placeholder="기간 (개월)" oninput="calcFinance2()"><span class="unit-text">개월간</span><select id="f2_type" onchange="calcFinance2()"><option value="simple">일반 단리</option><option value="compound">연 복리</option></select></div>
+            </div>
+            <div class="result-box"><span class="result-label">만기 예치 총액 (세전)</span><div><div class="result-value up" id="f2_res">0 원</div><div class="result-sub" id="f2_sub">순수 이자: 0원 (일반과세 15.4% 수령 시 이자: 0원)</div></div></div>
+        </div>
+
+        <!-- 11. 주식/ETF 기대수익률 투자 시뮬레이터 -->
+        <div class="calc-card">
+            <h3>📈 주식/ETF 투자 수익률 및 평가액 계산</h3>
+            <div class="input-line"><input type="number" id="f3_total" placeholder="총 매수금액" oninput="calcFinance3()"><span class="unit-text">원을 투자하여</span><input type="number" id="f3_rate" placeholder="목표 수익률" oninput="calcFinance3()"><span class="unit-text">% 수익 시</span></div>
+            <div class="result-box"><span class="result-label">예상 평가 금액</span><div><div class="result-value up" id="f3_res">0 원</div><div class="result-sub" id="f3_sub">순수익금: +0원</div></div></div>
+        </div>
+
+        <!-- 12. 목표 자산 복리 달성 계산기 -->
+        <div class="calc-card">
+            <h3>🎯 매년 일정 수익률 거둘 시 미래 자산 계산</h3>
+            <div class="input-line"><input type="number" id="f4_seed" placeholder="현재 자산" oninput="calcFinance4()"><span class="unit-text">원을 연</span><input type="number" id="f4_rate" placeholder="연간 수익률" oninput="calcFinance4()"><span class="unit-text">%로</span><input type="number" id="f4_year" placeholder="굴릴 기간" oninput="calcFinance4()"><span class="unit-text">년 굴리면?</span></div>
+            <div class="result-box"><span class="result-label">미래 최종 자산 규모</span><span class="result-value neutral" id="f4_res">0 원</span></div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB 3: 부동산 간이 세금 ==================== -->
+    <div id="tab-tax" class="tab-content">
+        <!-- 13. 부동산 취득세 간이 계산기 -->
+        <div class="calc-card">
+            <h3>🏢 부동산 취득세 간이 계산기 (지방교육세 등 포함)</h3>
+            <div class="input-line">
+                <input type="number" id="t1_price" placeholder="부동산 매매가" oninput="calcTax1()">
+                <span class="unit-text">원</span>
+                <select id="t1_type" onchange="calcTax1()">
+                    <option value="1">주택 (1주택자/일반)</option>
+                    <option value="8">주택 (다주택 중과 8%)</option>
+                    <option value="12">주택 (다주택 중과 12%)</option>
+                    <option value="4.6">상가 / 토지 (4.6%)</option>
+                </select>
+            </div>
+            <div class="result-box"><span class="result-label">예상 취득세 총액</span><div><div class="result-value down" id="t1_res">0 원</div><div class="result-sub" id="t1_sub">대략적인 표준 합산세율 적용 기준</div></div></div>
+        </div>
+
+        <!-- 14. 부동산 양도소득세 간이 시뮬레이터 -->
+        <div class="calc-card">
+            <h3>🔑 부동산 양도소득세 기초 계산기</h3>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <div class="input-line"><input type="number" id="t2_sell" placeholder="양도(매도) 가액" oninput="calcTax2()"><span class="unit-text">원에 팔고,</span><input type="number" id="t2_buy" placeholder="취득(매수) 가액" oninput="calcTax2()"><span class="unit-text">원에 샀을 때</span></div>
+                <div class="input-line"><input type="number" id="t2_expense" placeholder="필요 경비(인테리어 등)" oninput="calcTax2()"><span class="unit-text">원 지출 포함</span></div>
+            </div>
+            <div class="result-box"><span class="result-label">예상 양도 차익</span><div><div class="result-value neutral" id="t2_res">0 원</div><div class="result-sub" id="t2_sub">과세 표준 및 장기보유공제 제외 순수 차익 기준</div></div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 💡 탭 전환 함수
+    function openTab(evt, tabId) {
+        const contents = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < contents.length; i++) {
+            contents[i].classList.remove("active");
+        }
+        const buttons = document.getElementsByClassName("tab-btn");
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove("active");
+        }
+        document.getElementById(tabId).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // 포맷팅 함수
+    function format(num) {
+        if (isNaN(num) || !isFinite(num) || num < 0) return "0";
+        return Number(num.toFixed(2)).toLocaleString('ko-KR');
+    }
+
+    // ==================== TAB 1 자바스크립트 연산 ====================
+    function calc1() {
+        const v1 = parseFloat(document.getElementById('v1_1').value); const v2 = parseFloat(document.getElementById('v1_2').value);
+        document.getElementById('res1').innerText = (!v1 || !v2) ? "0" : format(v1 * (v2 / 100));
+    }
+    function calc2() {
+        const v1 = parseFloat(document.getElementById('v2_1').value); const v2 = parseFloat(document.getElementById('v2_2').value);
+        document.getElementById('res2').innerText = (!v1 || !v2) ? "0 %" : format((v2 / v1) * 100) + " %";
+    }
+    function calc3() {
+        const v1 = parseFloat(document.getElementById('v3_1').value); const v2 = parseFloat(document.getElementById('v3_2').value); const res = document.getElementById('res3');
+        if(!v1 || isNaN(v2)) { res.innerText = "0 %"; res.className = "result-value"; return; }
+        const gap = ((v2 - v1) / v1) * 100;
+        if (gap > 0) { res.innerText = "+" + format(gap) + " %"; res.className = "result-value up"; }
+        else if (gap < 0) { res.innerText = format(gap) + " %"; res.className = "result-value down"; }
+        else { res.innerText = "0 %"; res.className = "result-value"; }
+    }
+    function calc4() {
+        const v1 = parseFloat(document.getElementById('v4_1').value); const v2 = parseFloat(document.getElementById('v4_2').value); const type = document.getElementById('v4_type').value;
+        if(!v1 || !v2) { document.getElementById('res4').innerText = "0"; return; }
+        document.getElementById('res4').innerText = format(type === "up" ? v1 * (1 + (v2 / 100)) : v1 * (1 - (v2 / 100)));
+    }
+    function calc5() {
+        const v1 = parseFloat(document.getElementById('v5_1').value); const v2 = parseFloat(document.getElementById('v5_2').value);
+        document.getElementById('res5').innerText = (!v1 || !v2) ? "0" : format(v1 / (v2 / 100));
+    }
+    function calc6() {
+        const v1 = parseFloat(document.getElementById('v6_1').value); const v2 = parseFloat(document.getElementById('v6_2').value);
+        if(!v1 || !v2) { document.getElementById('res6').innerText = "0 원"; document.getElementById('res6_sub').innerText = "할인액: 0원"; return; }
+        const dc = v1 * (v2 / 100); document.getElementById('res6').innerText = format(v1 - dc) + " 원"; document.getElementById('res6_sub').innerText = "할인액: " + format(dc) + "원";
+    }
+    function calc7() {
+        const v1 = parseFloat(document.getElementById('v7_1').value); const v2 = parseFloat(document.getElementById('v7_2').value);
+        document.getElementById('res7').innerText = (!v1 || !v2) ? "0 %" : format((v2 / v1) * 100) + " %";
+    }
+    function calc8() {
+        const v1 = parseFloat(document.getElementById('v8_1').value); const v2 = parseFloat(document.getElementById('v8_2').value);
+        if(!v1 || !v2) { document.getElementById('res8').innerText = "0 원"; document.getElementById('res8_sub').innerText = "순수익: 0원"; return; }
+        const margin = v1 * (v2 / 100); document.getElementById('res8').innerText = format(v1 + margin) + " 원"; document.getElementById('res8_sub').innerText = "순수익: " + format(margin) + "원";
+    }
+
+    // ==================== TAB 2 금융/재테크 자바스크립트 연산 ====================
+    // 9. 주식 물타기
+    function calcFinance1() {
+        const p1 = parseFloat(document.getElementById('f1_p1').value); const q1 = parseFloat(document.getElementById('f1_q1').value);
+        const p2 = parseFloat(document.getElementById('f1_p2').value); const q2 = parseFloat(document.getElementById('f1_q2').value);
+        const res = document.getElementById('f1_res'); const sub = document.getElementById('f1_sub');
+        if(!p1 || !q1 || !p2 || !q2) { res.innerText = "0 원"; sub.innerText = "총 보유 주수: 0주 / 총 투자금: 0원"; return; }
+        const total_qty = q1 + q2; const total_amt = (p1 * q1) + (p2 * q2); const avg_price = total_amt / total_qty;
+        res.innerText = format(avg_price) + " 원"; sub.innerText = "총 보유 주수: " + format(total_qty) + "주 / 총 투자금: " + format(total_amt) + "원";
+    }
+    // 10. 예적금 이자
+    function calcFinance2() {
+        const money = parseFloat(document.getElementById('f2_money').value); const rate = parseFloat(document.getElementById('f2_rate').value);
+        const period = parseFloat(document.getElementById('f2_period').value); const type = document.getElementById('f2_type').value;
+        const res = document.getElementById('f2_res'); const sub = document.getElementById('f2_sub');
+        if(!money || !rate || !period) { res.innerText = "0 원"; sub.innerText = "순수 이자: 0원"; return; }
+        let interest = 0;
+        if(type === 'simple') {
+            interest = money * (rate / 100) * (period / 12);
+        } else {
+            interest = money * (Math.pow(1 + (rate / 100), period / 12) - 1);
+        }
+        const tax_interest = interest * (1 - 0.154);
+        res.innerText = format(money + interest) + " 원";
+        sub.innerText = "순수 이자(세전): " + format(interest) + "원 (일반과세 15.4% 적용 시 실수령 이자: " + format(tax_interest) + "원)";
+    }
+    // 11. 기대수익률
+    function calcFinance3() {
+        const total = parseFloat(document.getElementById('f3_total').value); const rate = parseFloat(document.getElementById('f3_rate').value);
+        if(!total || !rate) { document.getElementById('f3_res').innerText = "0 원"; document.getElementById('f3_sub').innerText = "순수익금: +0원"; return; }
+        const profit = total * (rate / 100);
+        document.getElementById('f3_res').innerText = format(total + profit) + " 원"; document.getElementById('f3_sub').innerText = "순수익금: +" + format(profit) + "원";
+    }
+    // 12. 목표자산 거치식 복리
+    function calcFinance4() {
+        const seed = parseFloat(document.getElementById('f4_seed').value); const rate = parseFloat(document.getElementById('f4_rate').value); const year = parseFloat(document.getElementById('f4_year').value);
+        if(!seed || !rate || !year) { document.getElementById('f4_res').innerText = "0 원"; return; }
+        const final_asset = seed * Math.pow(1 + (rate / 100), year);
+        document.getElementById('f4_res').innerText = format(final_asset) + " 원";
+    }
+
+    // ==================== TAB 3 부동산 세금 자바스크립트 연산 ====================
+    // 13. 취득세 간이
+    function calcTax1() {
+        const price = parseFloat(document.getElementById('t1_price').value); const type = parseFloat(document.getElementById('t1_type').value);
+        if(!price) { document.getElementById('t1_res').innerText = "0 원"; return; }
+        let rate = type;
+        if(type === 1) { // 주택 가액별 간이세율 세팅 (6억 이하 1.1%, 9억 이하 1.1~3.3%, 9억 초과 3.5% 농특/지교세 합산 러프 계산)
+            if(price <= 600000000) rate = 1.1;
+            else if(price <= 900000000) rate = 2.4;
+            else rate = 3.5;
+        }
+        const tax = price * (rate / 100);
+        document.getElementById('t1_res').innerText = format(tax) + " 원";
+    }
+    // 14. 양도세 간이
+    function calcTax2() {
+        const sell = parseFloat(document.getElementById('t2_sell').value); const buy = parseFloat(document.getElementById('t2_buy').value); const expense = parseFloat(document.getElementById('t2_expense').value) || 0;
+        if(!sell || !buy) { document.getElementById('t2_res').innerText = "0 원"; return; }
+        const margin = sell - buy - expense;
+        document.getElementById('t2_res').innerText = margin <= 0 ? "양도 차익 없음 (비과세 또는 손실)" : format(margin) + " 원";
+    }
+</script>
+</body>
+</html>
