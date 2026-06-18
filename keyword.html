@@ -112,11 +112,10 @@
             fetchNaverKeywords(query);
         }
 
-        // 1. 🔵 구글 리얼 데이터 연동 (Jsonp 방식 우회로 보안 우회)
+        // 1. 🔵 구글 리얼 데이터 연동
         function fetchGoogleKeywords(query) {
             googleSuggestArea.innerHTML = "<div class='loading'>🔍 구글 실시간 조회 중...</div>";
             
-            // 기존 프록시 전면 폐기, 브라우저가 다이렉트로 인식하는 script 해킹 방식 도입
             const callbackName = 'googleCallback_' + Math.round(100000 * Math.random());
             window[callbackName] = function(data) {
                 const suggestions = data[1] || [];
@@ -138,7 +137,7 @@
             document.body.appendChild(script);
         }
 
-        // 2. 🟢 네이버 리얼 데이터 연동 (CORS 차단이 없는 네이버 순수 검색 자동완성 채널 타격)
+        // 2. 🟢 네이버 리얼 데이터 연동
         function fetchNaverKeywords(query) {
             naverSuggestArea.innerHTML = "<div class='loading'>🔍 네이버 실시간 조회 중...</div>";
 
@@ -163,7 +162,7 @@
             document.body.appendChild(script);
         }
 
-        // 3. 진짜 통신 장애가 났을 때만 보일 지능형 서브 문구 (이제 거의 작동 안 함)
+        // 3. 백업 로직
         function showSmartFallback(query, type) {
             let items = [];
             if (type === 'google') {
@@ -206,7 +205,7 @@
             }
         }
 
-        // 네이버 트렌드 시드 생성
+        // 네이버 트렌드 (괄호 오타 수정 완료)
         async function loadNaverTrends() {
             naverLoading.style.display = "block";
             try {
@@ -215,7 +214,7 @@
                 naverLoading.style.display = "none";
                 if (data.status === 'ok' && data.items.length > 0) {
                     const reversedItems = [...data.items].reverse();
-                    reversedItems.slice(0, 10).forEach((item, index) => appendTrendRow(naverTrendBody, index + 1, item.title, 'naver'););
+                    reversedItems.slice(0, 10).forEach((item, index) => appendTrendRow(naverTrendBody, index + 1, item.title, 'naver'));
                 } else { throw new Error(); }
             } catch (e) {
                 naverLoading.style.display = "none";
