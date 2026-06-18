@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 퍼센트 계산기 | 편리한 생활 도구</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 20px 15px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .title-area {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .title-area h2 {
+            font-size: 1.5rem;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+
+        .title-area p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* 반응형 카드 스타일 */
+        .calc-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eef2f6;
+        }
+
+        .calc-card h3 {
+            font-size: 1rem;
+            color: #475569;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 입력 폼 라인 */
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+
+        /* 모바일에서 자동 확대되는 현상 방지를 위해 폰트 크기 16px 설정 */
+        .input-group input, .input-group select {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px; 
+            width: 100px;
+            outline: none;
+            transition: border-color 0.2s;
+            text-align: right;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .input-group select {
+            text-align: left;
+            width: auto;
+            background-color: #fff;
+        }
+
+        .text-label {
+            color: #334155;
+            font-weight: 500;
+        }
+
+        /* 결과 창 스타일 */
+        .result-box {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .result-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .result-value.accent {
+            color: #dc2626;
+        }
+        
+        .result-value.blue {
+            color: #2563eb;
+        }
+
+        /* 모바일 최적화 대응 */
+        @media (max-width: 480px) {
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+            .input-group input {
+                width: 100%;
+                flex-grow: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="title-area">
+        <h2>📊 실시간 퍼센트 계산기</h2>
+        <p>숫자를 입력하면 자동으로 계산 결과가 표시됩니다.</p>
+    </div>
+
+    <div class="calc-card">
+        <h3>💡 전체의 몇 %는 얼마?</h3>
+        <div class="input-group">
+            <input type="number" id="v1_1" placeholder="전체값" oninput="calcType1()"> <span class="text-label">의</span>
+            <input type="number" id="v1_2" placeholder="퍼센트" oninput="calcType1()"> <span class="text-label">%는?</span>
+        </div>
+        <div class="result-box">
+            <span class="result-label">계산 결과</span>
+            <span class="result-value" id="res1">0</span>
+        </div>
+    </div>
+
+    <div class="calc-card">
+        <h3>💡 특정 값은 전체의 몇 %?</h3>
+        <div class="input-group">
+            <input type="number" id="v2_1" placeholder="전체값" oninput="calcType2()"> <span class="text-label">중에서</span>
+            <input type="number" id="v2_2" placeholder="특정값" oninput="calcType2()"> <span class="text-label">은(는)?</span>
+        </div>
+        <div class="result-box">
+            <span class="result-label">비율 결과</span>
+            <span class="result-value" id="res2">0 %</span>
+        </div>
+    </div>
+
+    <div class="calc-card">
+        <h3>💡 값이 변했을 때 증감률은?</h3>
+        <div class="input-group">
+            <input type="number" id="v3_1" placeholder="처음값" oninput="calcType3()"> <span class="text-label">이(가)</span>
+            <input type="number" id="v3_2" placeholder="나중값" oninput="calcType3()"> <span class="text-label">(으)로 변하면?</span>
+        </div>
+        <div class="result-box">
+            <span class="result-label">증감률 결과</span>
+            <span class="result-value" id="res3">0 %</span>
+        </div>
+    </div>
+
+    <div class="calc-card">
+        <h3>💡 값에서 몇 % 증가/감소하면?</h3>
+        <div class="input-group">
+            <input type="number" id="v4_1" placeholder="기준값" oninput="calcType4()"> <span class="text-label">에서</span>
+            <input type="number" id="v4_2" placeholder="퍼센트" oninput="calcType4()"> <span class="text-label">%</span>
+            <select id="v4_type" onchange="calcType4()">
+                <option value="up">증가 시</option>
+                <option value="down">감소 시</option>
+            </select>
+        </div>
+        <div class="result-box">
+            <span class="result-label">최종 금액/값</span>
+            <span class="result-value" id="res4">0</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 숫자를 예쁘게 콤마 세팅하고 소수점 2자리까지만 끊어주는 함수
+    function formatNum(num) {
+        if (isNaN(num) || !isFinite(num)) return "0";
+        return Number(num.toFixed(2)).toLocaleString('ko-KR');
+    }
+
+    // 1. 전체의 몇 % 구하기
+    function calcType1() {
+        const v1 = parseFloat(document.getElementById('v1_1').value);
+        const v2 = parseFloat(document.getElementById('v1_2').value);
+        const res = document.getElementById('res1');
+        
+        if(!v1 || !v2) { res.innerText = "0"; return; }
+        res.innerText = formatNum(v1 * (v2 / 100));
+    }
+
+    // 2. 특정값은 전체의 몇 % 구하기
+    function calcType2() {
+        const v1 = parseFloat(document.getElementById('v2_1').value);
+        const v2 = parseFloat(document.getElementById('v2_2').value);
+        const res = document.getElementById('res2');
+        
+        if(!v1 || !v2) { res.innerText = "0 %"; return; }
+        res.innerText = formatNum((v2 / v1) * 100) + " %";
+    }
+
+    // 3. 증감률 구하기
+    function calcType3() {
+        const v1 = parseFloat(document.getElementById('v3_1').value);
+        const v2 = parseFloat(document.getElementById('v3_2').value);
+        const res = document.getElementById('res3');
+        
+        if(!v1 || isNaN(v2)) { res.innerText = "0 %"; res.className = "result-value"; return; }
+        
+        const gap = ((v2 - v1) / v1) * 100;
+        
+        if (gap > 0) {
+            res.innerText = "+" + formatNum(gap) + " %";
+            res.className = "result-value accent"; // 상승은 빨간색
+        } else if (gap < 0) {
+            res.innerText = formatNum(gap) + " %";
+            res.className = "result-value blue"; // 하락은 파란색
+        } else {
+            res.innerText = "0 %";
+            res.className = "result-value";
+        }
+    }
+
+    // 4. 특정 % 증가/감소 결과 구하기
+    function calcType4() {
+        const v1 = parseFloat(document.getElementById('v4_1').value);
+        const v2 = parseFloat(document.getElementById('v4_2').value);
+        const type = document.getElementById('v4_type').value;
+        const res = document.getElementById('res4');
+        
+        if(!v1 || !v2) { res.innerText = "0"; return; }
+        
+        let finalVal = 0;
+        if (type === "up") {
+            finalVal = v1 * (1 + (v2 / 100));
+        } else {
+            finalVal = v1 * (1 - (v2 / 100));
+        }
+        res.innerText = formatNum(finalVal);
+    }
+</script>
+</body>
+</html>
