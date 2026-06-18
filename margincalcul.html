@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 쇼핑몰 마진 계산기 (수수료·택배·광고·세금 완벽 방어)</title>
+    <title>📊 쇼핑몰 마진 계산기 (국세청 부가세 완벽 반영 버전)</title>
     <style>
         body {
             font-family: 'Pretendard', -apple-system, sans-serif;
@@ -30,14 +30,10 @@
             font-size: 24px;
         }
         .calc-section {
-            background: #f8fafc;
+            background: #f0fdf4;
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
-        }
-        .margin-box {
-            background: #f0fdf4;
             border: 1px solid #bbf7d0;
         }
         .grid-inputs {
@@ -61,9 +57,9 @@
             display: flex;
             align-items: center;
         }
-        input {
+        input, select {
             width: 100%;
-            padding: 10px 30px 10px 10px;
+            padding: 10px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             font-size: 15px;
@@ -71,9 +67,13 @@
             box-sizing: border-box;
             outline: none;
         }
-        input:focus {
+        input:focus, select:focus {
             border-color: #16a34a;
             box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+        select {
+            text-align-last: right;
+            padding-right: 20px;
         }
         .unit {
             position: absolute;
@@ -117,56 +117,57 @@
 <body>
 
 <div class="wrapper">
-    <h2>📈 끝판왕 쇼핑몰 마진 계산기</h2>
+    <h2>📈 쇼핑몰 마진 계산기 (세금 정밀반영)</h2>
 
-    <div class="calc-section margin-box">
+    <div class="calc-section">
         <div class="grid-inputs">
             <div class="input-item">
-                <label>① 제품 원가 (필수)</label>
+                <label>① 제품 원가 (도매가)</label>
                 <div class="input-wrapper">
-                    <input type="number" id="mCost" placeholder="10000" oninput="calcUltimateMargin()">
+                    <input type="number" id="mCost" placeholder="10000" oninput="calcTaxMargin()">
                     <span class="unit">원</span>
                 </div>
             </div>
             <div class="input-item">
-                <label>② 목표 마진율 (필수)</label>
+                <label>② 목표 마진율</label>
                 <div class="input-wrapper">
-                    <input type="number" id="mMargin" placeholder="30" oninput="calcUltimateMargin()">
+                    <input type="number" id="mMargin" placeholder="30" oninput="calcTaxMargin()">
                     <span class="unit">%</span>
                 </div>
             </div>
             <div class="input-item">
                 <label>③ 마켓 수수료</label>
                 <div class="input-wrapper">
-                    <input type="number" id="mFee" placeholder="10" oninput="calcUltimateMargin()">
+                    <input type="number" id="mFee" placeholder="10" oninput="calcTaxMargin()">
                     <span class="unit">%</span>
                 </div>
             </div>
             <div class="input-item">
-                <label>④ 예상 세금 (부가세 등)</label>
-                <div class="input-wrapper">
-                    <input type="number" id="mTax" placeholder="10" oninput="calcUltimateMargin()">
-                    <span class="unit">%</span>
-                </div>
+                <label>④ 내 과세 유형 (세금 선택)</label>
+                <select id="mTaxType" onchange="calcTaxMargin()">
+                    <option value="general">일반과세자 (마진의 10%)</option>
+                    <option value="simplified" selected>간이과세자 (매출의 1.5%)</option>
+                    <option value="none">세금 제외 (0%)</option>
+                </select>
             </div>
             <div class="input-item">
-                <label>⑤ 소비자 택배비 (판매자 부담분)</label>
+                <label>⑤ 소비자 택배비 (본인 부담분)</label>
                 <div class="input-wrapper">
-                    <input type="number" id="mShipping" placeholder="3000" oninput="calcUltimateMargin()">
+                    <input type="number" id="mShipping" placeholder="3000" oninput="calcTaxMargin()">
                     <span class="unit">원</span>
                 </div>
             </div>
             <div class="input-item">
-                <label>⑥ 개당 전환 광고비 (예상)</label>
+                <label>⑥ 개당 예상 광고비</label>
                 <div class="input-wrapper">
-                    <input type="number" id="mAd" placeholder="1500" oninput="calcUltimateMargin()">
+                    <input type="number" id="mAd" placeholder="1500" oninput="calcTaxMargin()">
                     <span class="unit">원</span>
                 </div>
             </div>
         </div>
         
         <div class="result-box" id="ultimateResult">
-            원가와 목표 마진을 입력하시면 실시간 역산이 시작됩니다.
+            원가와 목표 마진을 입력하시면 세법 반영 역산이 시작됩니다.
         </div>
     </div>
 </div>
@@ -177,14 +178,11 @@
         return Math.round(num).toLocaleString('ko-KR');
     }
 
-    function calcUltimateMargin() {
-        // 필수 값 (없으면 계산 안 함)
+    function calcTaxMargin() {
         const cost = parseFloat(document.getElementById('mCost').value);
         const marginRate = parseFloat(document.getElementById('mMargin').value);
-        
-        // 선택 값 (빈칸이거나 지우면 자동으로 0원 / 0% 처리!)
         const feeRate = parseFloat(document.getElementById('mFee').value) || 0;
-        const taxRate = parseFloat(document.getElementById('mTax').value) || 0;
+        const taxType = document.getElementById('mTaxType').value;
         const shipping = parseFloat(document.getElementById('mShipping').value) || 0;
         const adCost = parseFloat(document.getElementById('mAd').value) || 0;
 
@@ -195,32 +193,57 @@
             return;
         }
 
-        // 비율 항목의 총합이 100%를 넘으면 수학적으로 판매가 계산 불가 경고
-        const totalPercent = marginRate + feeRate + taxRate;
-        if (totalPercent >= 100) {
-            resultDiv.innerHTML = "<span style='color:red; font-weight:bold;'>[오류] 마진+수수료+세금의 합이 100% 이상일 수 없습니다. 비율을 조정해 주세요.</span>";
-            return;
+        let sellPrice = 0;
+        let taxAmount = 0;
+        const baseCost = cost + shipping + adCost; // 총 지출 고정비용
+        const rateSum = feeRate + marginRate;      // 수수료 + 마진 비율 합산
+
+        // 과세 유형별 대한민국 국세청 정밀 역산 공식 적용
+        if (taxType === 'general') {
+            // [일반과세자 공식] 매입세액공제(원가, 택배, 광고비에 포함된 부가세 10% 환급) 적용시
+            // 판매가 = 총비용 / (1 - 1.1 * (수수료율 + 마진율)/100)
+            if ((1.1 * rateSum) >= 100) {
+                resultDiv.innerHTML = "<span style='color:red; font-weight:bold;'>[오류] 목표 마진과 수수료율이 너무 높아 가격 산출이 불가능합니다.</span>";
+                return;
+            }
+            sellPrice = baseCost / (1 - (1.1 * rateSum / 100));
+            taxAmount = (sellPrice - baseCost) / 11; // 최종 납부할 정산 부가세 (매출세액 - 매입세액)
+
+        } else if (taxType === 'simplified') {
+            // [간이과세자 공식] 전체 매출액의 1.5% 단순 부과
+            const totalRate = rateSum + 1.5;
+            if (totalRate >= 100) {
+                resultDiv.innerHTML = "<span style='color:red; font-weight:bold;'>[오류] 비율의 합이 100% 이상일 수 없습니다.</span>";
+                return;
+            }
+            sellPrice = baseCost / (1 - (totalRate / 100));
+            taxAmount = sellPrice * 0.015; // 매출의 1.5%
+
+        } else {
+            // [세금 제외]
+            if (rateSum >= 100) {
+                resultDiv.innerHTML = "<span style='color:red; font-weight:bold;'>[오류] 비율의 합이 100% 이상일 수 없습니다.</span>";
+                return;
+            }
+            sellPrice = baseCost / (1 - (rateSum / 100));
+            taxAmount = 0;
         }
 
-        // 🧮 끝판왕 수수료/비용 방어 역산 공식
-        // 판매가 = (원가 + 택배비 + 광고비) / (1 - (마진율 + 수수료율 + 세금율) / 100)
-        const sellPrice = (cost + shipping + adCost) / (1 - (totalPercent / 100));
-        
-        // 각각의 지출 금액 계산
         const feeAmount = sellPrice * (feeRate / 100);
-        const taxAmount = sellPrice * (taxRate / 100);
-        const netProfit = sellPrice * (marginRate / 100); // 사장님이 설정한 마진율대로 정확히 정산됨
+        const netProfit = sellPrice * (marginRate / 100);
+
+        let taxExpl = taxType === 'general' ? '예상 부가세 (매입공제 반영)' : (taxType === 'simplified' ? '간이과세 부가세 (매출의 1.5%)' : '세금 제외');
 
         resultDiv.innerHTML = `
             🎯 <b>최종 추천 판매가:</b> <span class="highlight">${formatNum(sellPrice)}원</span>
-            <div class="info-text">※ 고정비(택배/광고)를 건지고 비율비용(수수료/세금)을 방어하면서, 사장님 통장에는 판매가의 정확히 <b>${marginRate}%(${formatNum(netProfit)}원)</b>가 남는 마법의 가격입니다.</div>
+            <div class="info-text">※ 세금 유형에 맞게 국세청 부가세 방어 공식을 적용했습니다. 이 가격에 팔면 사장님 순수익은 정확히 <b>${marginRate}% (${formatNum(netProfit)}원)</b>가 보장됩니다.</div>
             
             <div class="breakdown">
                 <b>[지출 및 정산 브레이크다운]</b><br>
-                • <b>제품 원가:</b> ${formatNum(cost)}원<br>
+                • <b>제품 원가(도매가):</b> ${formatNum(cost)}원<br>
                 • <b>마켓 수수료 (${feeRate}%):</b> ${formatNum(feeAmount)}원<br>
-                • <b>예상 세금 (${taxRate}%):</b> ${formatNum(taxAmount)}원<br>
-                • <b>판매자 부담 택배비:</b> ${formatNum(shipping)}원<br>
+                • <b>${taxExpl}:</b> ${formatNum(taxAmount)}원<br>
+                • <b>소비자 택배비 부담분:</b> ${formatNum(shipping)}원<br>
                 • <b>개당 광고 비용:</b> ${formatNum(adCost)}원<br>
                 <span style="color:#16a34a; font-weight:bold;">• 최종 순수익 (내 몫): ${formatNum(netProfit)}원</span>
             </div>
