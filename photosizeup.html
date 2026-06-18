@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>초강력 서버 연동형 AI 고화질 확대기</title>
+    <title>AI 초고화질 이미지 확대기</title>
     <style>
         * { box-sizing: border-box; }
         body { font-family: -apple-system, system-ui, sans-serif; background-color: #f4f7f6; padding: 40px 20px; display: flex; justify-content: center; margin: 0; }
         .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 600px; }
         h2 { margin-top: 0; color: #2c3e50; text-align: center; margin-bottom: 25px; }
-        .server-config { background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; font-size: 14px; margin-bottom: 20px; border: 1px solid #ffeeba; }
-        .server-config input { width: 100%; padding: 8px; margin-top: 8px; border-radius: 4px; border: 1px solid #ced4da; }
+        .warning-box { background-color: #e3f2fd; color: #0d47a1; padding: 15px; border-radius: 8px; border-left: 5px solid #2196f3; font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
         .upload-box { border: 2px dashed #3498db; padding: 40px 30px; text-align: center; border-radius: 8px; background-color: #ebf5fb; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 20px; }
         .upload-box input { display: none; }
         .upload-label { font-size: 16px; font-weight: bold; color: #2980b9; }
@@ -24,11 +23,11 @@
 <body>
 
     <div class="container">
-        <h2>🤖 초강력 AI 고화질 확대기 (서버형)</h2>
+        <h2>🤖 AI 고화질 이미지 확대기</h2>
         
-        <div class="server-config">
-            <strong>🔗 1단계에서 생성된 구글 코랩 주소를 입력하세요</strong>
-            <input type="text" id="serverUrlInput" placeholder="https://xxxx.ngrok-free.app 형태의 주소 붙여넣기">
+        <div class="warning-box">
+            <strong>✨ 24시간 언제나 무료 고화질 변환 서비스</strong><br>
+            초고성능 딥러닝 AI 신경망(Real-ESRGAN)이 깨진 픽셀을 정밀 분석하여 원래 크기의 4배로 선명하게 복원합니다.
         </div>
 
         <label class="upload-box" id="dropZone">
@@ -37,20 +36,22 @@
         </label>
 
         <div class="preview-container" id="previewArea">
-            <label style="font-weight: bold;">선택된 원본 이미지</label><br>
+            <label style="font-weight: bold; color: #2c3e50;">원본 이미지 미리보기</label><br>
             <img id="previewImg" src="">
-            <div id="infoText" style="margin-top: 10px; font-size: 14px; color: #555;"></div>
+            <div id="infoText" style="margin-top: 15px; font-size: 14px; color: #555;"></div>
         </div>
 
-        <button class="btn-download" id="downloadBtn" disabled>주소 입력 및 이미지를 등록해주세요</button>
+        <button class="btn-download" id="downloadBtn" disabled>이미지를 먼저 등록해주세요</button>
     </div>
 
     <script>
+        // 🔗 24시간 안정적으로 구동되는 허깅페이스 고정 주소 세팅 완벽 매립
+        const SERVER_URL = 'https://youssang-photosizeup.hf.space/upscale';
+
         const imageInput = document.getElementById('imageInput');
         const previewArea = document.getElementById('previewArea');
         const previewImg = document.getElementById('previewImg');
         const downloadBtn = document.getElementById('downloadBtn');
-        const serverUrlInput = document.getElementById('serverUrlInput');
         const infoText = document.getElementById('infoText');
 
         let base64Image = "";
@@ -69,37 +70,25 @@
                 
                 const img = new Image();
                 img.onload = function() {
-                    infoText.innerHTML = `원본 크기: ${img.width}x${img.height}px ➡️ <strong>AI 4배 확대 예정: ${img.width*4}x${img.height*4}px</strong>`;
+                    infoText.innerHTML = `원본: ${img.width}x${img.height}px ➡️ <strong>AI 4배 정밀 복원: ${img.width*4}x${img.height*4}px</strong>`;
                 };
                 img.src = base64Image;
-                checkReady();
+
+                downloadBtn.disabled = false;
+                downloadBtn.classList.add('active');
+                downloadBtn.innerText = '🔥 AI 고화질 복원 및 다운로드 시작';
             };
             reader.readAsDataURL(file);
         });
 
-        serverUrlInput.addEventListener('input', checkReady);
-
-        function checkReady() {
-            if (base64Image && serverUrlInput.value.trim() !== "") {
-                downloadBtn.disabled = false;
-                downloadBtn.classList.add('active');
-                downloadBtn.innerText = '🔥 구글 AI 서버로 고화질 확대 시작';
-            }
-        }
-
         downloadBtn.addEventListener('click', async function() {
-            let serverUrl = serverUrlInput.value.trim();
-            if (!serverUrl.endsWith('/upscale')) {
-                serverUrl = serverUrl + '/upscale';
-            }
-
             try {
                 downloadBtn.classList.add('loading');
-                downloadBtn.innerText = '⚡ 구글 초고성능 GPU 가동 중... (약 5~10초 소요)';
+                downloadBtn.innerText = '⚡ AI 인공지능이 이미지 복원 중... (약 10~15초 소요)';
                 downloadBtn.disabled = true;
 
-                // 구글 코랩 서버로 이미지 전송 및 AI 연산 요청
-                const response = await fetch(serverUrl, {
+                // 허깅페이스 영구 무료 AI 서버로 정밀 업스케일링 요청
+                const response = await fetch(SERVER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ image: base64Image })
@@ -108,22 +97,21 @@
                 const result = await response.json();
 
                 if (result.success && result.image) {
-                    // 서버가 보내준 진짜 고화질 이미지 다운로드
                     const link = document.createElement('a');
-                    link.download = `${originalFileName}_RealESRGAN_4x.png`;
+                    link.download = `${originalFileName}_AI_4x.png`;
                     link.href = result.image;
                     link.click();
                 } else {
-                    alert("서버 연산 오류: " + (result.error || "알 수 없는 에러"));
+                    alert("서버 연산 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
                 }
 
             } catch (error) {
                 console.error(error);
-                alert("AI 서버와 연결할 수 없습니다. 코랩 주소가 정확한지, 코랩이 실행 중인지 확인해 주세요.");
+                alert("AI 서버와 통신할 수 없습니다. 서버 부팅 직후에는 첫 연산 시 약간의 지연이 있을 수 있습니다.");
             } finally {
                 downloadBtn.classList.remove('loading');
                 downloadBtn.disabled = false;
-                downloadBtn.innerText = '🔥 구글 AI 서버로 고화질 확대 시작';
+                downloadBtn.innerText = '🔥 AI 고화질 복원 및 다운로드 시작';
             }
         });
     </script>
