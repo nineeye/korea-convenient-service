@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 고화질 이미지 확대기</title>
-    <script src="https://cdn.jsdelivr.net/npm/@upscalerjs/default-model@latest/dist/umd/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/upscaler@latest/dist/browser/umd/upscaler.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/upscaler@0.13.1/dist/browser/umd/upscaler.min.js"></script>
+    
     <style>
+        /* 기존 스타일 그대로 유지 */
         * { box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
@@ -16,7 +18,6 @@
             justify-content: center; 
             margin: 0;
         }
-        
         .container { 
             background: white; 
             padding: 30px; 
@@ -25,9 +26,7 @@
             width: 100%; 
             max-width: 600px; 
         }
-        
         h2 { margin-top: 0; color: #2c3e50; text-align: center; margin-bottom: 25px; }
-
         .warning-box {
             background-color: #e3f2fd;
             color: #0d47a1;
@@ -38,7 +37,6 @@
             line-height: 1.5;
             margin-bottom: 20px;
         }
-
         .upload-box {
             border: 2px dashed #3498db;
             padding: 40px 30px;
@@ -53,15 +51,10 @@
             align-items: center;
             justify-content: center;
         }
-        .upload-box.dragover {
-            background-color: #d6eaf8;
-            border-color: #2980b9;
-            transform: scale(1.02);
-        }
+        .upload-box.dragover { background-color: #d6eaf8; border-color: #2980b9; transform: scale(1.02); }
         .upload-box input { display: none; }
         .upload-label { font-size: 16px; font-weight: bold; color: #2980b9; cursor: pointer; pointer-events: none; }
         .upload-sub { font-size: 13px; color: #7f8c8d; margin-top: 8px; pointer-events: none; }
-
         .settings {
             display: block; 
             background: #f8fafc;
@@ -70,65 +63,24 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 20px;
         }
-
         .setting-group { margin-bottom: 15px; }
         .setting-group label { display: block; font-weight: 600; color: #475569; margin-bottom: 8px; }
-        
-        select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #cbd5e1;
-            font-size: 15px;
-            outline: none;
-        }
-
-        .preview-container {
-            display: none; 
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .preview-container img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
+        select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 15px; outline: none; }
+        .preview-container { display: none; text-align: center; margin-bottom: 20px; }
+        .preview-container img { max-width: 100%; height: auto; border-radius: 6px; border: 1px solid #ccc; }
         .info-text { font-size: 15px; color: #334155; margin-top: 15px; }
-        
         .danger-text {
-            color: #e74c3c;
-            font-weight: bold;
-            font-size: 14px;
-            margin-top: 10px;
-            display: none;
-            background-color: #fee2e2;
-            padding: 10px;
-            border-radius: 6px;
+            color: #e74c3c; font-weight: bold; font-size: 14px; margin-top: 10px; display: none;
+            background-color: #fee2e2; padding: 10px; border-radius: 6px;
         }
-
         .btn-download {
-            width: 100%;
-            padding: 15px;
-            background-color: #95a5a6; 
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: not-allowed;
-            transition: background 0.2s;
+            width: 100%; padding: 15px; background-color: #95a5a6; color: white; border: none;
+            border-radius: 8px; font-size: 16px; font-weight: bold; cursor: not-allowed; transition: background 0.2s;
         }
-        
-        .btn-download.active {
-            background-color: #2ecc71;
-            cursor: pointer;
-        }
+        .btn-download.active { background-color: #2ecc71; cursor: pointer; }
         .btn-download.active:hover { background-color: #27ae60; }
         .btn-download.active:active { transform: scale(0.98); }
         .btn-disabled { background-color: #e74c3c !important; cursor: not-allowed; }
-        
-        /* AI 연산 중 로딩 애니메이션 효과 */
         .loading { background-color: #e67e22 !important; cursor: wait !important; }
     </style>
 </head>
@@ -139,7 +91,7 @@
         
         <div class="warning-box">
             <strong>✨ AI 초고해상도(Super Resolution) 안내</strong><br>
-            단순히 픽셀을 늘리는 것이 아니라, AI가 선과 정밀도를 직접 예측하고 복원하여 흐려짐 없이 선명하게 확대합니다. (연산에 수 초~수십 초가 소요될 수 있습니다.)
+            AI가 일러스트의 경계선을 부드럽고 또렷하게 예측하여 노이즈 없이 확대합니다. 최초 실행 시 모델 다운로드로 인해 수 초간 멈춤 현상이 있을 수 있습니다.
         </div>
 
         <label class="upload-box" id="dropZone">
@@ -152,7 +104,7 @@
             <div class="setting-group">
                 <label>AI 확대 배율 선택</label>
                 <select id="scaleSelect">
-                    <option value="2">2배 AI 확대 (200%)</option>
+                    <option value="2">2배 AI 확대 (200% - 추천)</option>
                     <option value="4" selected>4배 AI 확대 (400%)</option>
                 </select>
             </div>
@@ -160,7 +112,7 @@
 
         <div class="preview-container" id="previewArea">
             <label style="font-weight: bold; color: #2c3e50;">원본 미리보기</label><br><br>
-            <img id="previewImg" src="" alt="미리보기">
+            <img id="previewImg" src="" alt="미리보기" crossOrigin="anonymous">
             <div class="info-text" id="resolutionInfo"></div>
             
             <div class="danger-text" id="dangerAlert">
@@ -172,8 +124,13 @@
     </div>
 
     <script>
-        // 2. AI 업스케일러 인스턴스 초기화
-        const upscaler = new Upscaler();
+        // 안전하게 인스턴스 초기화 (명시적 기본 설정 적용)
+        const upscaler = new Upscaler({
+            model: {
+                path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/default-model@0.5.0/models/unsplit/model.json',
+                scale: 4
+            }
+        });
 
         const imageInput = document.getElementById('imageInput');
         const dropZone = document.getElementById('dropZone');
@@ -211,10 +168,7 @@
             reader.readAsDataURL(file);
         }
 
-        imageInput.addEventListener('change', function(e) {
-            processFile(e.target.files[0]);
-        });
-
+        imageInput.addEventListener('change', function(e) { processFile(e.target.files[0]); });
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
         dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
         dropZone.addEventListener('drop', (e) => {
@@ -237,42 +191,35 @@
             
             resolutionInfo.innerHTML = `원본: ${originalImg.width} x ${originalImg.height}px <br> <strong>AI 예측 해상도: <span style="color:#2980b9">${newWidth} x ${newHeight}px</span></strong>`;
 
-            // 사용자의 안전을 위해 변환용 해상도가 너무 크면 경고문 노출
-            if (newWidth > 3000 || newHeight > 3000) {
+            if (newWidth > 2000 || newHeight > 2000) {
                 dangerAlert.style.display = 'block';
             } else {
                 dangerAlert.style.display = 'none';
             }
         }
 
-        // 3. 핵심 로직: AI 기반 이미지 업스케일링 실행
+        // 변환 로직 보완
         downloadBtn.addEventListener('click', async function() {
             if (!originalImg.src || this.disabled || this.classList.contains('loading')) return;
 
             const scale = parseInt(scaleSelect.value);
             
             try {
-                // UI 상태를 'AI 연산 중' 모드로 변경
                 downloadBtn.classList.add('loading');
-                downloadBtn.innerText = '⚡ AI 엔진 가동 및 픽셀 복원 중... (잠시만 기다려주세요)';
+                downloadBtn.innerText = '⚡ AI 신경망 가동 중... (최초 실행 시 5~10초 소요)';
                 
-                // UpscalerJS를 사용한 AI 비전 연산 수행
-                // 기본 모델은 IdealDeblur 2x / 4x를 지원하며, 내부적으로 보간법이 아닌 신경망 연산을 수행합니다.
-                const upsaledDataUrl = await upscaler.upscale(previewImg, {
-                    scale: scale
-                });
+                // 이미지 요소를 명시적으로 전달하여 연산 진행
+                const upscaledDataUrl = await upscaler.upscale(previewImg);
 
-                // 연산 완료 후 다운로드 실행
                 const link = document.createElement('a');
                 link.download = `${originalFileName}_AI_${scale}x.png`;
-                link.href = upsaledDataUrl;
+                link.href = upscaledDataUrl;
                 link.click();
 
             } catch (error) {
-                console.error(error);
-                alert("AI 연산 중 오류가 발생했거나 브라우저 메모리가 부족합니다. 더 작은 이미지를 사용해 주세요.");
+                console.error("AI 업스케일 에러 세부사항:", error);
+                alert("정상적으로 AI 모델을 로드하지 못했습니다. 로컬 크롬 창(file:///) 환경이거나 인터넷 연결을 확인해 주세요.");
             } finally {
-                // UI 복구
                 downloadBtn.classList.remove('loading');
                 downloadBtn.innerText = 'AI 복원 및 다운로드 시작';
             }
