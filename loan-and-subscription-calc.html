@@ -236,14 +236,11 @@
                 </div>
             </div>
             <div class="input-item">
-                <label>대출 기간 (만기 상환 기간)</label>
-                <select id="loanTerm" onchange="calcRealestate()">
-                    <option value="10">10년</option>
-                    <option value="20">20년</option>
-                    <option value="30" selected>30년 (일반적)</option>
-                    <option value="40">40년</option>
-                    <option value="50">50년</option>
-                </select>
+                <label>대출 기간 (상환 기간)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="loanTerm" placeholder="30" value="30" oninput="calcRealestate()">
+                    <span class="unit">년</span>
+                </div>
             </div>
             <div class="input-item">
                 <label>본인 및 부부 합산 연소득 (DSR 진단용)</label>
