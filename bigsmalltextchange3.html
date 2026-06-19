@@ -18,20 +18,14 @@
             margin: 0;
             justify-content: center;
         }
-        .nav { display: flex; gap: 6px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
-        .nav a { 
-            padding: 10px 16px; background: #e2e8f0; color: #475569; text-decoration: none; 
-            border-radius: 8px; font-size: 14px; font-weight: 600; transition: all 0.2s;
-        }
+        .nav { display: flex; gap: 4px; margin-bottom: 20px; justify-content: center; width: 100%; max-width: 700px; }
+        .nav a { flex: 1; text-align: center; padding: 10px 4px; background: #e2e8f0; color: #475569; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700; transition: all 0.2s; white-space: nowrap; }
         .nav a:hover { background: #cbd5e1; }
-        .nav a.active { 
-            background: #9b59b6; /* 맞춤법 고유 테마 컬러 */
-            color: white; 
-        }
+        .nav a.active { background: #9b59b6; color: white; }
         
         .container { 
             background: white; padding: 30px; border-radius: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.08); 
-            width: 100%; max-width: 600px; box-sizing: border-box;
+            width: 100%; max-width: 700px; box-sizing: border-box;
         }
         h2 { color: #0f172a; font-size: 22px; margin: 0 0 6px 0; font-weight: 800; text-align: center; }
         .sub-desc { color: #64748b; font-size: 13px; text-align: center; margin: 0 0 20px 0; }
@@ -42,19 +36,20 @@
         textarea:focus { border-color: #9b59b6; background: white; box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.1); }
         .check-btn { width: 100%; padding: 13px; background: #9b59b6; color: white; font-weight: 700; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; transition: background 0.2s; margin-top: 5px; }
         .check-btn:hover { background: #8e44ad; }
+        
+        @media (max-width: 600px) { .nav { gap: 2px; } .nav a { font-size: 11px; padding: 8px 2px; } }
     </style>
 </head>
 <body>
 
-    <!-- 🔒 5개 탭 완벽 반영 버전 -->
     <div class="nav">
         <a href="index.html" style="background: #0f172a; color: white;">🏠 홈</a>
-        <a href="bigsmalltextchange1.html">📝 글자수/바이트</a>
-        <a href="bigsmalltextchange2.html">🔠 대소문자 변환</a>
-        <a href="bigsmalltextchange3.html" class="active">✨ 맞춤법 검사</a>
-        <a href="bigsmalltextchange4.html">🚫 공백/줄바꿈 제거</a>
-        <a href="bigsmalltextchange5.html">🔒 보안 비밀번호</a>
-        <a href="bigsmalltextchange6.html">📄 자동저장 메모장</a>
+        <a href="bigsmalltextchange1.html">📝 글자수</a>
+        <a href="bigsmalltextchange2.html">🔠 대소문자</a>
+        <a href="bigsmalltextchange3.html" class="active">✨ 맞춤법</a>
+        <a href="bigsmalltextchange4.html">🚫 공백제거</a>
+        <a href="bigsmalltextchange5.html">🔒 비밀번호</a>
+        <a href="bigsmalltextchange6.html">📄 메모장</a>
     </div>
 
     <div class="container">
