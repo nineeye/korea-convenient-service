@@ -26,9 +26,38 @@
         h2 {
             text-align: center;
             color: #1e293b;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-size: 24px;
         }
+        
+        /* 계산기 내부 모드 전환 탭 스위치 */
+        .mode-switch {
+            display: flex;
+            background: #e2e8f0;
+            padding: 5px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            gap: 5px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+            border-radius: 7px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .mode-btn.active {
+            background: #ffffff;
+            color: #16a34a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
         .calc-section {
             background: #f0fdf4;
             padding: 20px;
@@ -119,6 +148,11 @@
 <div class="wrapper">
     <h2>📈 쇼핑몰 마진 계산기 (세금 정밀반영)</h2>
 
+    <div class="mode-switch">
+        <button class="mode-btn active" id="btn_modeA" onclick="changeMode('A')">🎯 목표마진 기준 가격역산</button>
+        <button class="mode-btn" id="btn_modeB" onclick="changeMode('B')">🏷️ 내 판매가 기준 마진분석</button>
+    </div>
+
     <div class="calc-section">
         <div class="grid-inputs">
             <div class="input-item">
@@ -128,13 +162,15 @@
                     <span class="unit">원</span>
                 </div>
             </div>
+            
             <div class="input-item">
-                <label>② 목표 마진율</label>
+                <label id="variableLabel">② 목표 마진율</label>
                 <div class="input-wrapper">
-                    <input type="number" id="mMargin" placeholder="30" oninput="calcTaxMargin()">
-                    <span class="unit">%</span>
+                    <input type="number" id="mVariableInput" placeholder="30" oninput="calcTaxMargin()">
+                    <span class="unit" id="variableUnit">%</span>
                 </div>
             </div>
+
             <div class="input-item">
                 <label>③ 마켓 수수료</label>
                 <div class="input-wrapper">
@@ -145,7 +181,7 @@
             <div class="input-item">
                 <label>④ 내 과세 유형 (세금 선택)</label>
                 <select id="mTaxType" onchange="calcTaxMargin()">
-                    <option value="general">일반과세자 (마진의 10%)</option>
+                    <option value="general">일반과세자 (부가세 정밀)</option>
                     <option value="simplified" selected>간이과세자 (매출의 1.5%)</option>
                     <option value="none">세금 제외 (0%)</option>
                 </select>
@@ -167,87 +203,163 @@
         </div>
         
         <div class="result-box" id="ultimateResult">
-            원가와 목표 마진을 입력하시면 세법 반영 역산이 시작됩니다.
+            원가와 변수를 입력하시면 정밀 연산이 시작됩니다.
         </div>
     </div>
 </div>
 
 <script>
+    let currentMode = 'A'; // 'A': 마진율 기준 역산, 'B': 판매가 기준 분석
+
     function formatNum(num) {
-        if(isNaN(num) || !isFinite(num)) return "0";
+        if(isNaN(num) || !isFinite(num) || num < 0) return "0";
         return Math.round(num).toLocaleString('ko-KR');
+    }
+
+    // 상단 탭 스위치 작동 제어 함수
+    function changeMode(mode) {
+        currentMode = mode;
+        const btnA = document.getElementById('btn_modeA');
+        const btnB = document.getElementById('btn_modeB');
+        const varLabel = document.getElementById('variableLabel');
+        const varInput = document.getElementById('mVariableInput');
+        const varUnit = document.getElementById('variableUnit');
+
+        if (mode === 'A') {
+            btnA.className = "mode-btn active";
+            btnB.className = "mode-btn";
+            varLabel.innerText = "② 목표 마진율";
+            varInput.placeholder = "30";
+            varUnit.innerText = "%";
+        } else {
+            btnA.className = "mode-btn";
+            btnB.className = "mode-btn active";
+            varLabel.innerText = "② 내가 정한 판매가";
+            varInput.placeholder = "20000";
+            varUnit.innerText = "원";
+        }
+        varInput.value = ""; // 입력값 리셋
+        calcTaxMargin();     // 초기화 계산 호출
     }
 
     function calcTaxMargin() {
         const cost = parseFloat(document.getElementById('mCost').value);
-        const marginRate = parseFloat(document.getElementById('mMargin').value);
+        const varInputValue = parseFloat(document.getElementById('mVariableInput').value);
         const feeRate = parseFloat(document.getElementById('mFee').value) || 0;
         const taxType = document.getElementById('mTaxType').value;
         const shipping = parseFloat(document.getElementById('mShipping').value) || 0;
         const adCost = parseFloat(document.getElementById('mAd').value) || 0;
-
         const resultDiv = document.getElementById('ultimateResult');
 
-        if (!cost || isNaN(marginRate)) {
-            resultDiv.innerHTML = "💡 <b>원가</b>와 <b>목표 마진율</b>을 입력하면 정밀 계산이 시작됩니다.";
+        // 예외 검증 처리
+        if (!cost || isNaN(varInputValue)) {
+            if (currentMode === 'A') {
+                resultDiv.innerHTML = "💡 <b>원가</b>와 <b>목표 마진율</b>을 입력하면 정밀 판매가 역산이 시작됩니다.";
+            } else {
+                resultDiv.innerHTML = "💡 <b>원가</b>와 <b>지정 판매가</b>를 입력하면 실제 마진 구조 분석이 시작됩니다.";
+            }
             return;
         }
 
-        let sellPrice = 0;
-        let taxAmount = 0;
         const baseCost = cost + shipping + adCost; // 총 지출 고정비용
-        const rateSum = feeRate + marginRate;      // 수수료 + 마진 비율 합산
+        let sellPrice = 0;
+        let marginRate = 0;
+        let taxAmount = 0;
+        let feeAmount = 0;
+        let netProfit = 0;
 
-        // 과세 유형별 대한민국 국세청 정밀 역산 공식 적용
-        if (taxType === 'general') {
-            // [일반과세자 공식] 매입세액공제(원가, 택배, 광고비에 포함된 부가세 10% 환급) 적용시
-            // 판매가 = 총비용 / (1 - 1.1 * (수수료율 + 마진율)/100)
-            if ((1.1 * rateSum) >= 100) {
-                resultDiv.innerHTML = "<span style='color:red; font-weight:bold;'>[오류] 목표 마진과 수수료율이 너무 높아 가격 산출이 불가능합니다.</span>";
-                return;
-            }
-            sellPrice = baseCost / (1 - (1.1 * rateSum / 100));
-            taxAmount = (sellPrice - baseCost) / 11; // 최종 납부할 정산 부가세 (매출세액 - 매입세액)
+        // ----------------------------------------------------
+        // [모드 A] 목표 마진율 기준 -> 최종 판매가 및 세금 역산 모드
+        // ----------------------------------------------------
+        if (currentMode === 'A') {
+            marginRate = varInputValue;
+            const rateSum = feeRate + marginRate;
 
-        } else if (taxType === 'simplified') {
-            // [간이과세자 공식] 전체 매출액의 1.5% 단순 부과
-            const totalRate = rateSum + 1.5;
-            if (totalRate >= 100) {
-                resultDiv.innerHTML = "<span style='color:red; font-weight:bold;'>[오류] 비율의 합이 100% 이상일 수 없습니다.</span>";
-                return;
+            if (taxType === 'general') {
+                if ((1.1 * rateSum) >= 100) {
+                    resultDiv.innerHTML = "<span style='color:red; font-weight:bold;'>[오류] 목표 마진과 수수료율이 너무 높아 가격 산출이 불가능합니다.</span>";
+                    return;
+                }
+                sellPrice = baseCost / (1 - (1.1 * rateSum / 100));
+                taxAmount = (sellPrice - baseCost) / 11;
+            } else if (taxType === 'simplified') {
+                const totalRate = rateSum + 1.5;
+                if (totalRate >= 100) {
+                    resultDiv.innerHTML = "<span style='color:red; font-weight:bold;'>[오류] 비율의 합이 100% 이상일 수 없습니다.</span>";
+                    return;
+                }
+                sellPrice = baseCost / (1 - (totalRate / 100));
+                taxAmount = sellPrice * 0.015;
+            } else {
+                if (rateSum >= 100) {
+                    resultDiv.innerHTML = "<span style='color:red; font-weight:bold;'>[오류] 비율의 합이 100% 이상일 수 없습니다.</span>";
+                    return;
+                }
+                sellPrice = baseCost / (1 - (rateSum / 100));
+                taxAmount = 0;
             }
-            sellPrice = baseCost / (1 - (totalRate / 100));
-            taxAmount = sellPrice * 0.015; // 매출의 1.5%
 
-        } else {
-            // [세금 제외]
-            if (rateSum >= 100) {
-                resultDiv.innerHTML = "<span style='color:red; font-weight:bold;'>[오류] 비율의 합이 100% 이상일 수 없습니다.</span>";
-                return;
+            feeAmount = sellPrice * (feeRate / 100);
+            netProfit = sellPrice * (marginRate / 100);
+
+            let taxExpl = taxType === 'general' ? '예상 부가세 (매입공제 반영)' : (taxType === 'simplified' ? '간이과세 부가세 (매출의 1.5%)' : '세금 제외');
+
+            resultDiv.innerHTML = `
+                🎯 <b>최종 추천 판매가:</b> <span class="highlight">${formatNum(sellPrice)}원</span>
+                <div class="info-text">※ 세금 유형에 맞게 국세청 부가세 방어 공식을 적용했습니다. 이 가격에 팔면 사장님 순수익은 정확히 <b>${marginRate}% (${formatNum(netProfit)}원)</b>가 보장됩니다.</div>
+                
+                <div class="breakdown">
+                    <b>[지출 및 정산 브레이크다운]</b><br>
+                    • <b>제품 원가(도매가):</b> ${formatNum(cost)}원<br>
+                    • <b>마켓 수수료 (${feeRate}%):</b> ${formatNum(feeAmount)}원<br>
+                    • <b>${taxExpl}:</b> ${formatNum(taxAmount)}원<br>
+                    • <b>소비자 택배비 부담분:</b> ${formatNum(shipping)}원<br>
+                    • <b>개당 광고 비용:</b> ${formatNum(adCost)}원<br>
+                    <span style="color:#16a34a; font-weight:bold;">• 최종 순수익 (내 몫): ${formatNum(netProfit)}원</span>
+                </div>
+            `;
+        } 
+        // ----------------------------------------------------
+        // [모드 B] 고정된 판매가 입력 -> 실질 마진율 분석 모드
+        // ----------------------------------------------------
+        else {
+            sellPrice = varInputValue;
+            feeAmount = sellPrice * (feeRate / 100);
+
+            if (taxType === 'general') {
+                // 일반과세자: (판매가 - 원가배송비광고비) / 11 -> 매출세액에서 매입세액을 공제한 최종 납부세액 계산
+                taxAmount = (sellPrice - baseCost) / 11;
+                if(taxAmount < 0) taxAmount = 0; 
+            } else if (taxType === 'simplified') {
+                taxAmount = sellPrice * 0.015;
+            } else {
+                taxAmount = 0;
             }
-            sellPrice = baseCost / (1 - (rateSum / 100));
-            taxAmount = 0;
+
+            // 순수익 계산 = 판매가 - 고정비용 - 마켓수수료 - 부가세
+            netProfit = sellPrice - baseCost - feeAmount - taxAmount;
+            // 실질 마진율 계산
+            marginRate = sellPrice > 0 ? (netProfit / sellPrice) * 100 : 0;
+
+            let taxExpl = taxType === 'general' ? '예상 부가세 (매입공제 반영)' : (taxType === 'simplified' ? '간이과세 부가세 (매출의 1.5%)' : '세금 제외');
+            let isMinus = netProfit < 0 ? 'color:#ef4444;' : 'color:#16a34a;';
+
+            resultDiv.innerHTML = `
+                📊 <b>예상 실질 마진율:</b> <span class="highlight" style="${isMinus}">${marginRate.toFixed(1)}%</span>
+                <div class="info-text">※ 입력하신 판매가에서 플랫폼 수수료와 세금을 정밀 제외한 순수 남는 마진 결과입니다.</div>
+                
+                <div class="breakdown">
+                    <b>[지출 및 정산 브레이크다운]</b><br>
+                    • <b>입력 판매가:</b> ${formatNum(sellPrice)}원<br>
+                    • <b>제품 원가(도매가):</b> ${formatNum(cost)}원<br>
+                    • <b>마켓 수수료 (${feeRate}%):</b> ${formatNum(feeAmount)}원<br>
+                    • <b>${taxExpl}:</b> ${formatNum(taxAmount)}원<br>
+                    • <b>소비자 택배비 부담분:</b> ${formatNum(shipping)}원<br>
+                    • <b>개당 광고 비용:</b> ${formatNum(adCost)}원<br>
+                    <span style="${isMinus} font-weight:bold;">• 최종 순수익 (내 몫): ${formatNum(netProfit)}원</span>
+                </div>
+            `;
         }
-
-        const feeAmount = sellPrice * (feeRate / 100);
-        const netProfit = sellPrice * (marginRate / 100);
-
-        let taxExpl = taxType === 'general' ? '예상 부가세 (매입공제 반영)' : (taxType === 'simplified' ? '간이과세 부가세 (매출의 1.5%)' : '세금 제외');
-
-        resultDiv.innerHTML = `
-            🎯 <b>최종 추천 판매가:</b> <span class="highlight">${formatNum(sellPrice)}원</span>
-            <div class="info-text">※ 세금 유형에 맞게 국세청 부가세 방어 공식을 적용했습니다. 이 가격에 팔면 사장님 순수익은 정확히 <b>${marginRate}% (${formatNum(netProfit)}원)</b>가 보장됩니다.</div>
-            
-            <div class="breakdown">
-                <b>[지출 및 정산 브레이크다운]</b><br>
-                • <b>제품 원가(도매가):</b> ${formatNum(cost)}원<br>
-                • <b>마켓 수수료 (${feeRate}%):</b> ${formatNum(feeAmount)}원<br>
-                • <b>${taxExpl}:</b> ${formatNum(taxAmount)}원<br>
-                • <b>소비자 택배비 부담분:</b> ${formatNum(shipping)}원<br>
-                • <b>개당 광고 비용:</b> ${formatNum(adCost)}원<br>
-                <span style="color:#16a34a; font-weight:bold;">• 최종 순수익 (내 몫): ${formatNum(netProfit)}원</span>
-            </div>
-        `;
     }
 </script>
 
