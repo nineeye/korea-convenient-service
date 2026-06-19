@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 구글 상위 노출용 글자수세기 핵심 키워드 매립 -->
-    <title>온라인 실시간 글자수세기 | 자소서 글자수 계산기</title>
-    <meta name="description" content="실시간으로 공백 포함/제외 글자수를 정확하게 계산해 주는 온라인 글자수세기 도구입니다. 자기소개서, 블로그 포스팅 글자수 검사에 최적화되어 있습니다.">
-    <meta name="keywords" content="글자수세기, 글자수계산기, 자소서글자수, 실시간글자수, 글자수검사">
+    <title>온라인 실시간 글자수세기 & 바이트 계산기</title>
+    <meta name="description" content="실시간 글자수 계산 및 사람인, 잡코리아 기준 맞춤형 바이트(Byte) 수치까지 완벽하게 지원하는 정교한 글자수세기 도구입니다.">
+    <meta name="keywords" content="글자수세기, 바이트계산기, 자소서글자수, 사람인글자수, 잡코리아글자수">
     <style>
         body { 
             font-family: 'Pretendard', -apple-system, sans-serif; 
@@ -19,7 +18,6 @@
             margin: 0;
             justify-content: center;
         }
-        /* 4분할 네비게이션 탭 스타일 통일 */
         .nav { 
             display: flex; 
             gap: 6px; 
@@ -37,11 +35,9 @@
             font-weight: 600;
             transition: all 0.2s;
         }
-        .nav a:hover {
-            background: #cbd5e1;
-        }
+        .nav a:hover { background: #cbd5e1; }
         .nav a.active { 
-            background: #3b82f6; /* 글자수 페이지 고유 테마 컬러 */
+            background: #3b82f6; 
             color: white; 
         }
         
@@ -51,7 +47,7 @@
             border-radius: 20px; 
             box-shadow: 0 12px 30px rgba(0,0,0,0.08); 
             width: 100%; 
-            max-width: 600px; 
+            max-width: 650px; 
             box-sizing: border-box;
         }
         h2 {
@@ -69,7 +65,7 @@
         }
         textarea { 
             width: 100%; 
-            height: 200px; 
+            height: 180px; 
             padding: 15px;
             border: 1px solid #cbd5e1;
             border-radius: 12px;
@@ -86,39 +82,72 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         
-        /* 전광판 대시보드 */
+        /* 메인 카운트 대시보드 */
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #475569;
+            margin: 20px 0 8px 2px;
+        }
         .count-board {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin: 20px 0 0 0;
+            gap: 10px;
         }
         .count-box {
             background: #f1f5f9;
-            padding: 15px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 10px;
             text-align: center;
             border: 1px solid #e2e8f0;
         }
         .count-box .label {
             font-size: 12px;
-            color: #475569;
+            color: #64748b;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .count-box .number {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
-            color: #1e3a8a;
+            color: #0f172a;
         }
-        .count-box.highlight .number {
-            color: #d97706; /* 공백제외 포인트 컬러 */
+        
+        /* 취업/플랫폼 바이트 레이아웃 */
+        .byte-board {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
         }
+        .byte-box {
+            background: #fef3c7;
+            padding: 14px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #fde68a;
+        }
+        .byte-box.saramin { background: #eff6ff; border-color: #bfdbfe; }
+        .byte-box.jobkorea { background: #f5f3ff; border-color: #ddd6fe; }
+        
+        .byte-box .label {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .byte-box.saramin .label { color: #1e40af; }
+        .byte-box.jobkorea .label { color: #5b21b6; }
+        
+        .byte-box .number {
+            font-size: 22px;
+            font-weight: 800;
+        }
+        .byte-box.saramin .number { color: #1d4ed8; }
+        .byte-box.jobkorea .number { color: #6d28d9; }
     </style>
 </head>
 <body>
 
-    <!-- 4분할 탭 일치화 -->
+    <!-- 4분할 네비게이션 탭 -->
     <div class="nav">
         <a href="bigsmalltextchange1.html" class="active">글자수</a>
         <a href="bigsmalltextchange2.html">대소문자</a>
@@ -127,19 +156,32 @@
     </div>
 
     <div class="container">
-        <h2>📝 실시간 글자수세기</h2>
-        <p class="sub-desc">텍스트를 입력하시면 실시간으로 글자수가 자동 계산됩니다.</p>
+        <h2>📝 정교한 실시간 글자수세기</h2>
+        <p class="sub-desc">공백 분석은 물론 취업 플랫폼별 맞춤형 바이트(Byte)까지 정밀 계산합니다.</p>
         
-        <textarea id="textInput" placeholder="내용을 입력하거나 붙여넣으세요..." oninput="counter()"></textarea>
+        <textarea id="textInput" placeholder="여기에 내용을 입력하거나 붙여넣으세요..." oninput="counter()"></textarea>
         
+        <div class="section-title">📊 기본 글자수 측정</div>
         <div class="count-board">
             <div class="count-box">
-                <div class="label">공백 포함</div>
+                <div class="label">공백 포함 (글자수)</div>
                 <div id="withSpace" class="number">0</div>
             </div>
-            <div class="count-box highlight">
-                <div class="label">공백 제외</div>
+            <div class="count-box">
+                <div class="label">공백 제외 (글자수)</div>
                 <div id="withoutSpace" class="number">0</div>
+            </div>
+        </div>
+
+        <div class="section-title">💼 취업 플랫폼별 실시간 자소서 바이트(Byte) 표준</div>
+        <div class="byte-board">
+            <div class="byte-box saramin">
+                <div class="label">사람인 기준 (한글 2B / 영문 1B / 엔터 2B)</div>
+                <div id="saraminByte" class="number">0 <span style="font-size:13px; font-weight:500;">Byte</span></div>
+            </div>
+            <div class="byte-box jobkorea">
+                <div class="label">잡코리아 기준 (한글 3B / 영문 1B / 엔터 1B)</div>
+                <div id="jobkoreaByte" class="number">0 <span style="font-size:13px; font-weight:500;">Byte</span></div>
             </div>
         </div>
     </div>
@@ -148,14 +190,43 @@
         function counter() {
             const text = document.getElementById('textInput').value;
             
-            // 공백 포함 글자수
+            // 1. 기본 글자수 계산
             const withSpaceCount = text.length;
-            
-            // 공백 제외 글자수 (\s 필터로 공백, 탭, 줄바꿈 전체 제거 후 카운트)
             const withoutSpaceCount = text.replace(/\s/g, "").length;
 
             document.getElementById('withSpace').innerText = withSpaceCount;
             document.getElementById('withoutSpace').innerText = withoutSpaceCount;
+
+            // 2. 플랫폼별 바이트 정밀 계산 루프
+            let saraminByte = 0;
+            let jobkoreaByte = 0;
+
+            for (let i = 0; i < text.length; i++) {
+                const char = text.charCodeAt(i);
+                const character = text.charAt(i);
+
+                // --- [사람인 계산 기준] ---
+                if (character === '\n') {
+                    saraminByte += 2; // 사람인은 엔터를 2바이트로 계산
+                } else if (char > 127) {
+                    saraminByte += 2; // 한글, 한자 등 멀티바이트 2바이트
+                } else {
+                    saraminByte += 1; // 영문, 숫자, 일반 공백 1바이트
+                }
+
+                // --- [잡코리아 계산 기준] ---
+                if (character === '\n') {
+                    jobkoreaByte += 1; // 잡코리아는 엔터를 1바이트로 계산
+                } else if (char > 127) {
+                    jobkoreaByte += 3; // 최신 웹 표준(UTF-8) 한글 3바이트 적용
+                } else {
+                    jobkoreaByte += 1; // 영문, 숫자, 일반 공백 1바이트
+                }
+            }
+
+            // 화면 전광판 업데이트
+            document.getElementById('saraminByte').innerHTML = saraminByte + ' <span style="font-size:13px; font-weight:500;">Byte</span>';
+            document.getElementById('jobkoreaByte').innerHTML = jobkoreaByte + ' <span style="font-size:13px; font-weight:500;">Byte</span>';
         }
     </script>
 </body>
