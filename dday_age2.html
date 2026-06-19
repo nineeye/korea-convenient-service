@@ -12,14 +12,11 @@
         .wrapper { width: 100%; max-width: 480px; background: white; padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.06); box-sizing: border-box; }
         h2 { text-align: center; color: #1e293b; margin-bottom: 25px; font-size: 22px; }
         .calc-card { background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; border-left: 5px solid #ec4899; }
-        .input-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
         .input-item { display: flex; flex-direction: column; gap: 6px; }
-        .date-split-container { display: flex; gap: 6px; align-items: center; }
-        .date-split-container input { flex: 1; padding: 11px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; text-align: center; outline: none; }
-        .date-split-container input:focus { border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1); }
         label { font-size: 14px; color: #475569; font-weight: 600; }
-        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type="number"] { -moz-appearance: textfield; }
+        input[type="date"] { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; box-sizing: border-box; }
+        input[type="date"]:focus { border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1); }
         .result-box { background: white; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center; min-height: 50px; display: flex; flex-direction: column; justify-content: center; }
         .age-huge { font-size: 32px; font-weight: 800; color: #db2777; }
         .sub-info { font-size: 13px; color: #64748b; margin-top: 6px; }
@@ -39,71 +36,48 @@
         <div class="input-group">
             <div class="input-item">
                 <label>생년월일 입력</label>
-                <div class="date-split-container">
-                    <input type="number" id="birthYear" placeholder="YYYY" oninput="autoTab(this, 4, 'birthMonth')">
-                    <span>년</span>
-                    <input type="number" id="birthMonth" placeholder="MM" oninput="autoTab(this, 2, 'birthDay')">
-                    <span>월</span>
-                    <input type="number" id="birthDay" placeholder="DD" oninput="autoTab(this, 2, 'baseYear')">
-                    <span>일</span>
-                </div>
+                <input type="date" id="birthDate" oninput="validateYear(this); calcAge();" onchange="calcAge()">
             </div>
             <div class="input-item">
-                <label>기준일 입력</label>
-                <div class="date-split-container">
-                    <input type="number" id="baseYear" placeholder="YYYY" oninput="autoTab(this, 4, 'baseMonth')">
-                    <span>년</span>
-                    <input type="number" id="baseMonth" placeholder="MM" oninput="autoTab(this, 2, 'baseDay')">
-                    <span>월</span>
-                    <input type="number" id="baseDay" placeholder="DD" oninput="autoTab(this, 2, null)">
-                    <span>일</span>
-                </div>
+                <label>기준일 (기본:오늘)</label>
+                <input type="date" id="baseDate" oninput="validateYear(this); calcAge();" onchange="calcAge()">
             </div>
         </div>
         <div class="result-box" id="ageResult">
-            <span style="color:#94a3b8;">정확한 생년월일을 입력해 주세요.</span>
+            <span style="color:#94a3b8;">생년월일을 입력해 주세요.</span>
         </div>
     </div>
 </div>
 
 <script>
-    // 오늘 날짜 기준으로 기준일 기본 세팅
-    const today = new Date();
-    document.getElementById('baseYear').value = today.getFullYear();
-    document.getElementById('baseMonth').value = String(today.getMonth() + 1).padStart(2, '0');
-    document.getElementById('baseDay').value = String(today.getDate()).padStart(2, '0');
-
-    function autoTab(input, maxLen, nextId) {
-        if (input.value.length > maxLen) {
-            input.value = input.value.slice(0, maxLen);
+    function validateYear(inputEl) {
+        const dateVal = inputEl.value;
+        if (!dateVal) return;
+        const yearPart = dateVal.split('-')[0];
+        
+        if (yearPart && yearPart.length === 4) {
+            if (event && event.inputType !== 'deleteContentBackward') {
+                const stepRightEvent = new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight', code: 'ArrowRight' });
+                inputEl.dispatchEvent(stepRightEvent);
+            }
         }
-        if (input.value.length === maxLen && nextId) {
-            document.getElementById(nextId).focus();
-            document.getElementById(nextId).select();
+        if (yearPart && yearPart.length > 4) {
+            const parts = dateVal.split('-');
+            parts[0] = yearPart.substring(0, 4);
+            inputEl.value = parts.join('-');
         }
-        calcAge();
     }
 
+    document.getElementById('baseDate').value = new Date().toISOString().split('T')[0];
+
     function calcAge() {
-        const by = document.getElementById('birthYear').value;
-        const bm = document.getElementById('birthMonth').value;
-        const bd = document.getElementById('birthDay').value;
-        
-        const uy = document.getElementById('baseYear').value;
-        const um = document.getElementById('baseMonth').value;
-        const ud = document.getElementById('baseDay').value;
-        
+        const birthInput = document.getElementById('birthDate').value;
+        const baseInput = document.getElementById('baseDate').value;
         const resultDiv = document.getElementById('ageResult');
+        if (!birthInput || !baseInput) return;
 
-        if (!by || !bm || !bd || !uy || !um || !ud) return;
-
-        const birth = new Date(`${by}-${bm}-${bd}`);
-        const base = new Date(`${uy}-${um}-${ud}`);
-
-        if (isNaN(birth.getTime()) || isNaN(base.getTime())) {
-            resultDiv.innerHTML = `<span style="color:#ef4444;">유효하지 않은 날짜가 있습니다.</span>`;
-            return;
-        }
+        const birth = new Date(birthInput);
+        const base = new Date(baseInput);
 
         let age = base.getFullYear() - birth.getFullYear();
         const monthDiff = base.getMonth() - birth.getMonth();
