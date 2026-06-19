@@ -5,37 +5,56 @@
     <title>말투 변환기 | 텍스트 마스터</title>
     <style>
         body { font-family: sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
-        .nav { display: flex; gap: 10px; margin-bottom: 20px; }
-        .nav a { padding: 10px 15px; background: #ddd; color: #333; text-decoration: none; border-radius: 6px; }
-        .nav a.active { background: #3498db; color: white; }
-        textarea { width: 100%; height: 200px; margin: 15px 0; }
-        .stats { display: flex; justify-content: space-around; font-weight: bold; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 800px; }
+        .nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
+        .nav a { padding: 10px; background: #ddd; text-decoration: none; border-radius: 5px; color: #333; }
+        .nav a.active { background: #9b59b6; color: white; }
+        textarea { width: 100%; height: 200px; margin: 15px 0; box-sizing: border-box; padding: 10px; }
+        
+        /* 버튼 그리드 설정 */
+        .btn-group { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
+        .btn-group button { 
+            padding: 10px 5px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            font-weight: bold; 
+            color: #333; 
+        }
     </style>
 </head>
 <body>
 
-<div class="nav" style="display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap;">
-    <a href="bigsmalltextchange1.html" style="padding: 10px; background: #ddd; text-decoration: none; border-radius: 5px;">글자수</a>
-    <a href="bigsmalltextchange2.html" style="padding: 10px; background: #ddd; text-decoration: none; border-radius: 5px;">대소문자</a>
-    <a href="bigsmalltextchange3.html" style="padding: 10px; background: #ddd; text-decoration: none; border-radius: 5px;">맞춤법</a>
-    <a href="bigsmalltextchange4.html" style="padding: 10px; background: #9b59b6; color: white; text-decoration: none; border-radius: 5px;">말투변환</a>
+<div class="nav">
+    <a href="#">글자수</a>
+    <a href="#">대소문자</a>
+    <a href="#">맞춤법</a>
+    <a href="#" class="active">말투변환</a>
 </div>
+
 <div class="container">
     <h2>재미있는 말투 변환기</h2>
     <textarea id="textInput" placeholder="여기에 변환할 문장을 입력하세요..."></textarea>
     
     <div class="btn-group">
-        <button style="background: #e67e22;" onclick="convert('grandma')">👵 할머니</button>
-        <button style="background: #f1c40f;" onclick="convert('tsundere')">츤데레</button>
-        <button style="background: #34495e;" onclick="convert('business')">💼 비즈니스</button>
-        <button style="background: #7f8c8d;" onclick="convert('ajae')">👴 아재</button>
-        <button style="background: #2c3e50;" onclick="convert('soldier')">🪖 군인</button>
-        <button style="background: #e91e63;" onclick="convert('mz')">📱 MZ세대</button>
-        <button style="background: #9c27b0;" onclick="convert('chuuni')">👿 중2병</button>
-        <button style="background: #d35400;" onclick="convert('sageuk')">👑 사극</button>
-        <button style="background: #27ae60;" onclick="convert('robot')">🤖 로봇</button>
-        <button style="background: #3498db;" onclick="convert('baby')">👶 아기</button>
+        <button style="background: #fdfd96;" onclick="convert('grandma')">👵 할머니</button>
+        <button style="background: #ffb3ba;" onclick="convert('tsundere')">츤데레</button>
+        <button style="background: #bae1ff;" onclick="convert('business')">💼 비즈니스</button>
+        <button style="background: #baffc9;" onclick="convert('ajae')">👴 아재</button>
+        <button style="background: #e6e6fa;" onclick="convert('soldier')">🪖 군인</button>
+        <button style="background: #ffdfba;" onclick="convert('mz')">📱 MZ세대</button>
+        <button style="background: #d8bfd8;" onclick="convert('chuuni')">👿 중2병</button>
+        <button style="background: #ffffba;" onclick="convert('sageuk')">👑 사극</button>
+        
+        <button style="background: #add8e6;" onclick="convert('robot')">🤖 로봇</button>
+        <button style="background: #ffccff;" onclick="convert('baby')">👶 아기</button>
+        <button style="background: #c1e1c1;" onclick="convert('boss')">👔 사장님</button>
+        <button style="background: #ffebcd;" onclick="convert('student')">🎒 초등생</button>
+        <button style="background: #e0ffff;" onclick="convert('foreigner')">🌎 외국인</button>
+        <button style="background: #f0f8ff;" onclick="convert('saturi')">🗣️ 사투리</button>
+        <button style="background: #faebd7;" onclick="convert('rapper')">🎤 래퍼</button>
+        <button style="background: #fff0f5;" onclick="convert('jammin')">🧒 잼민이</button>
     </div>
 </div>
 
@@ -54,6 +73,12 @@
             case 'sageuk': text = text.replace(/다\./g, '하오니,').replace(/해요/g, '하옵나이다.'); break;
             case 'robot': text = "[SYSTEM] " + text.replace(/다\./g, '완료되었습니다.'); break;
             case 'baby': text = text.replace(/다\./g, '쪄요~').replace(/해요/g, '해쪄요!'); break;
+            case 'boss': text = text.replace(/다\./g, '알겠나?').replace(/해요/g, '해두게.'); break;
+            case 'student': text = text.replace(/다\./g, '했음!').replace(/해요/g, '함 헤헤'); break;
+            case 'foreigner': text = "오우, " + text.replace(/다\./g, '해요~ 예스!'); break;
+            case 'saturi': text = text.replace(/다\./g, '데이~').replace(/해요/g, '하능가?'); break;
+            case 'rapper': text = "Yo, " + text.replace(/다\./g, 'Yeah!').replace(/해요/g, 'Check it!'); break;
+            case 'jammin': text = text.replace(/다\./g, '라고요오?').replace(/해요/g, '하거든여!!'); break;
         }
         document.getElementById('textInput').value = text;
     }
