@@ -14,14 +14,9 @@
         .calc-card { background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; border-left: 5px solid #22c55e; }
         .input-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
         .input-item { display: flex; flex-direction: column; gap: 6px; }
-        .date-split-container { display: flex; gap: 6px; align-items: center; }
-        .date-split-container input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; text-align: center; outline: none; }
-        .date-split-container input:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1); }
         label { font-size: 14px; color: #475569; font-weight: 600; }
-        select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; background: white; box-sizing: border-box; }
-        select:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1); }
-        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type="number"] { -moz-appearance: textfield; }
+        select, input[type="date"] { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; background: white; box-sizing: border-box; }
+        select:focus, input[type="date"]:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1); }
         .result-box { background: white; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center; min-height: 50px; display: flex; flex-direction: column; justify-content: center; }
         .mili-huge { font-size: 28px; font-weight: 800; color: #16a34a; }
         .sub-info { font-size: 13px; color: #64748b; margin-top: 6px; }
@@ -51,14 +46,7 @@
             </div>
             <div class="input-item">
                 <label>입대일 입력</label>
-                <div class="date-split-container">
-                    <input type="number" id="joinYear" placeholder="YYYY" oninput="autoTab(this, 4, 'joinMonth')">
-                    <span>년</span>
-                    <input type="number" id="joinMonth" placeholder="MM" oninput="autoTab(this, 2, 'joinDay')">
-                    <span>월</span>
-                    <input type="number" id="joinDay" placeholder="DD" oninput="autoTab(this, 2, null)">
-                    <span>일</span>
-                </div>
+                <input type="date" id="joinDate" oninput="validateYear(this); calcMilitary();" onchange="calcMilitary()">
             </div>
         </div>
         <div class="result-box" id="militaryResult"></div>
@@ -66,47 +54,44 @@
 </div>
 
 <script>
-    const today = new Date();
-    document.getElementById('joinYear').value = today.getFullYear();
-    document.getElementById('joinMonth').value = String(today.getMonth() + 1).padStart(2, '0');
-    document.getElementById('joinDay').value = String(today.getDate()).padStart(2, '0');
-
-    function autoTab(input, maxLen, nextId) {
-        if (input.value.length > maxLen) {
-            input.value = input.value.slice(0, maxLen);
+    function validateYear(inputEl) {
+        const dateVal = inputEl.value;
+        if (!dateVal) return;
+        const yearPart = dateVal.split('-')[0];
+        
+        if (yearPart && yearPart.length === 4) {
+            if (event && event.inputType !== 'deleteContentBackward') {
+                const stepRightEvent = new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight', code: 'ArrowRight' });
+                inputEl.dispatchEvent(stepRightEvent);
+            }
         }
-        if (input.value.length === maxLen && nextId) {
-            document.getElementById(nextId).focus();
-            document.getElementById(nextId).select();
+        if (yearPart && yearPart.length > 4) {
+            const parts = dateVal.split('-');
+            parts[0] = yearPart.substring(0, 4);
+            inputEl.value = parts.join('-');
         }
-        calcMilitary();
     }
 
+    document.getElementById('joinDate').value = new Date().toISOString().split('T')[0];
+
     function calcMilitary() {
-        const jy = document.getElementById('joinYear').value;
-        const jm = document.getElementById('joinMonth').value;
-        const jd = document.getElementById('joinDay').value;
+        const joinInput = document.getElementById('joinDate').value;
         const milMonths = parseInt(document.getElementById('milType').value);
         const resultDiv = document.getElementById('militaryResult');
-        
-        if (!jy || !jm || !jd) return;
+        if (!joinInput) return;
 
-        const joinDate = new Date(`${jy}-${jm}-${jd}`);
-        if(isNaN(joinDate.getTime())) {
-            resultDiv.innerHTML = `<span style="color:#ef4444;">유효하지 않은 날짜입니다.</span>`;
-            return;
-        }
+        const joinDate = new Date(joinInput);
         joinDate.setHours(0,0,0,0);
         
         const dischargeDate = new Date(joinDate);
         dischargeDate.setMonth(dischargeDate.getMonth() + milMonths);
         dischargeDate.setDate(dischargeDate.getDate() - 1);
 
-        const todayDate = new Date();
-        todayDate.setHours(0,0,0,0);
+        const today = new Date();
+        today.setHours(0,0,0,0);
 
         const totalServiceDays = Math.round((dischargeDate - joinDate) / (1000 * 60 * 60 * 24)) + 1;
-        const leftDays = Math.round((dischargeDate - todayDate) / (1000 * 60 * 60 * 24));
+        const leftDays = Math.round((dischargeDate - today) / (1000 * 60 * 60 * 24));
         const servedDays = totalServiceDays - leftDays;
         let percent = ((servedDays / totalServiceDays) * 100).toFixed(2);
         
