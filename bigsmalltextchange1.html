@@ -2,38 +2,231 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>글자수 세기 | 텍스트 마스터</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 🔥 '글자수세기'와 '공백제거' 황금 키워드 두 개를 동시에 사냥하는 타이틀 구조 -->
+    <title>온라인 글자수세기 & 공백제거기 | 만능 자소서 글자수 계산기</title>
+    <meta name="description" content="실시간 온라인 글자수세기 및 원클릭 공백제거 통합 프로그램입니다. 자소서 글자수 계산, 영문 대소문자 변환, 줄바꿈 변환 기능을 무료로 이용하세요.">
+    <meta name="keywords" content="글자수세기, 공백제거, 글자수계산기, 공백제거사이트, 대소문자변환, 자소서글자수">
     <style>
-        body { font-family: sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
-        .nav { display: flex; gap: 10px; margin-bottom: 20px; }
-        .nav a { padding: 10px 15px; background: #ddd; color: #333; text-decoration: none; border-radius: 6px; }
-        .nav a.active { background: #3498db; color: white; }
-        textarea { width: 100%; height: 200px; margin: 15px 0; }
-        .stats { display: flex; justify-content: space-around; font-weight: bold; }
+        body {
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .wrapper {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+        }
+        .seo-title-area {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .seo-title-area h1 {
+            color: #0f172a;
+            font-size: 24px;
+            margin: 0 0 6px 0;
+            font-weight: 800;
+        }
+        .seo-title-area p {
+            color: #64748b;
+            font-size: 13px;
+            margin: 0;
+            font-weight: 500;
+        }
+        textarea {
+            width: 100%;
+            height: 22px;
+            min-height: 200px;
+            padding: 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            resize: vertical;
+            background: #f8fafc;
+            line-height: 1.6;
+        }
+        textarea:focus {
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* 4개 그리드로 확장된 실시간 카운팅 보드 */
+        .count-board {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .count-box {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .count-box .label {
+            font-size: 12px;
+            color: #475569;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .count-box .number {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1e3a8a;
+        }
+        .count-box.highlight .number {
+            color: #b91c1c; /* 공백제외는 중요하니까 레드 포인트 */
+        }
+
+        /* 가공 버튼 툴 박스 */
+        .tool-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            margin: 15px 0 8px 0;
+        }
+        .tool-toolbar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .btn-tool {
+            padding: 11px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-tool:hover { background: #2563eb; }
+        
+        /* 공백제거 등 핵심 마케팅 기능 버튼은 초록색으로 시각적 강조 */
+        .btn-accent { background: #10b981; }
+        .btn-accent:hover { background: #059669; }
+        
+        .btn-reset { background: #64748b; }
+        .btn-reset:hover { background: #475569; }
     </style>
 </head>
 <body>
-    
-    <div class="nav" style="display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap;">
-        <a href="bigsmalltextchange1.html" style="padding: 10px; background: #9b59b6; color: white; text-decoration: none; border-radius: 5px;">글자수</a>
-        <a href="bigsmalltextchange2.html" style="padding: 10px; background: #ddd; text-decoration: none; border-radius: 5px;">대소문자</a>
-        <a href="bigsmalltextchange3.html" style="padding: 10px; background: #ddd; text-decoration: none; border-radius: 5px;">맞춤법</a>
+
+<div class="wrapper">
+    <div class="seo-title-area">
+        <h1>📝 온라인 글자수세기 & 공백제거기</h1>
+        <p>글자수 계산부터 맞춤형 공백 제거까지 한 페이지로 완결</p>
     </div>
-    <div class="container">
-        <h2>글자 수 세기</h2>
-        <textarea id="textInput" oninput="count()"></textarea>
-        <div class="stats">
-            <span>공백 포함: <span id="countAll">0</span></span>
-            <span>공백 제외: <span id="countNoSpace">0</span></span>
+
+    <!-- 입력창 -->
+    <textarea id="textInput" placeholder="여기에 텍스트를 입력하거나 붙여넣으세요. 실시간으로 글자수가 분석됩니다..." oninput="calculateText()"></textarea>
+
+    <!-- 실시간 전광판 (유저들이 가장 많이 보는 영역) -->
+    <div class="count-board">
+        <div class="count-box">
+            <div class="label">공백 포함 글자수</div>
+            <div id="withSpace" class="number">0</div>
+        </div>
+        <div class="count-box highlight">
+            <div class="label">공백 제외 글자수</div>
+            <div id="withoutSpace" class="number">0</div>
+        </div>
+        <div class="count-box">
+            <div class="label">공백(스페이스) 개수</div>
+            <div id="spaceOnly" class="number">0</div>
+        </div>
+        <div class="count-box">
+            <div class="label">줄바꿈(엔터) 횟수</div>
+            <div id="lineCount" class="number">0</div>
         </div>
     </div>
-    <script>
-        function count() {
-            const text = document.getElementById('textInput').value;
-            document.getElementById('countAll').innerText = text.length;
-            document.getElementById('countNoSpace').innerText = text.replace(/[\s]/g, '').length;
+
+    <div class="tool-label">⚡ 원클릭 텍스트 가공 툴셋</div>
+    <!-- 사장님이 원하셨던 공백 제거 필터 대거 탑재 -->
+    <div class="tool-toolbar">
+        <button class="btn-tool btn-accent" onclick="transformText('removeSpace')">🚫 모든 공백 제거</button>
+        <button class="btn-tool btn-accent" onclick="transformText('removeLine')">↩️ 줄바꿈을 공백으로</button>
+        <button class="btn-tool" onclick="transformText('upper')">ABC 대문자</button>
+        <button class="btn-tool" onclick="transformText('lower')">abc 소문자</button>
+        <button class="btn-tool" onclick="transformText('copy')">📋 결과 전체 복사</button>
+        <button class="btn-tool btn-reset" onclick="transformText('reset')">🗑️ 모두 비우기</button>
+    </div>
+</div>
+
+<script>
+    function calculateText() {
+        const text = document.getElementById('textInput').value;
+        
+        // 1. 공백 포함
+        const withSpaceCount = text.length;
+        
+        // 2. 공백 제외
+        const withoutSpaceCount = text.replace(/\s/g, "").length;
+        
+        // 3. 순수 스페이스 개수 낚아채기
+        const spaceCount = (text.match(/ /g) || []).length;
+        
+        // 4. 줄바꿈(엔터) 횟수 계산
+        const lineCount = text ? (text.match(/\n/g) || []).length + 1 : 0;
+
+        document.getElementById('withSpace').innerText = withSpaceCount;
+        document.getElementById('withoutSpace').innerText = withoutSpaceCount;
+        document.getElementById('spaceOnly').innerText = spaceCount;
+        document.getElementById('lineCount').innerText = text ? lineCount : 0;
+    }
+
+    function transformText(type) {
+        const textarea = document.getElementById('textInput');
+        let currentText = textarea.value;
+
+        if (!currentText && type !== 'reset') {
+            alert("📌 가공할 텍스트를 먼저 입력해 주세요!");
+            return;
         }
-    </script>
+
+        switch (type) {
+            case 'removeSpace':
+                // 모든 스페이스, 탭, 줄바꿈을 완전히 압착 제거
+                textarea.value = currentText.replace(/\s/g, "");
+                break;
+            case 'removeLine':
+                // 엔터 쳐진 줄바꿈을 부드러운 한 칸 공백으로 치환
+                textarea.value = currentText.replace(/\n/g, " ");
+                break;
+            case 'upper':
+                textarea.value = currentText.toUpperCase();
+                break;
+            case 'lower':
+                textarea.value = currentText.toLowerCase();
+                break;
+            case 'copy':
+                textarea.select();
+                document.execCommand('copy');
+                alert("📋 가공 및 정돈된 텍스트가 복사되었습니다. 자소서나 블로그에 붙여넣으세요!");
+                break;
+            case 'reset':
+                textarea.value = '';
+                break;
+        }
+        
+        calculateText(); // 가공 후 전광판 새로고침
+    }
+</script>
+
 </body>
 </html>
