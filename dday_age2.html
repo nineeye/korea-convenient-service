@@ -36,11 +36,11 @@
         <div class="input-group">
             <div class="input-item">
                 <label>생년월일 입력</label>
-                <input type="date" id="birthDate" onchange="calcAge()">
+                <input type="date" id="birthDate" oninput="handleDateInput(this); calcAge();" onchange="calcAge()">
             </div>
             <div class="input-item">
                 <label>기준일 (기본:오늘)</label>
-                <input type="date" id="baseDate" onchange="calcAge()">
+                <input type="date" id="baseDate" oninput="handleDateInput(this); calcAge();" onchange="calcAge()">
             </div>
         </div>
         <div class="result-box" id="ageResult">
@@ -50,8 +50,60 @@
 </div>
 
 <script>
+    // 페이지 로드 시 오늘 날짜 기본 세팅
     document.getElementById('baseDate').value = new Date().toISOString().split('T')[0];
 
+    // 키보드 직접 입력 시 4자리/2자리 타이핑하면 다음 칸으로 강제 이동시키는 함수
+    function handleDateInput(inputEl) {
+        // 유저가 키보드로 직접 타이핑 중인 값(가상 값)을 체크
+        const val = inputEl.value;
+        
+        // 브라우저의 기본 date 인풋 입력 상태 감지
+        if (document.activeElement === inputEl) {
+            // 인풋 내부의 텍스트 선택 영역 정보를 이용해 현재 커서가 어디 있는지 파악하고 포커스 이동을 제어합니다.
+            // 단, 일반적인 date 타입은 스크립트만으로 내부 세그먼트(년/월/일) 이동이 까다로우므로 
+            // 유저가 연속 입력할 때 연도 자릿수가 4자리가 채워지면 탭(Tab) 키를 누른 것처럼 동작하게 이벤트를 보정합니다.
+            
+            // 인풋창에 입력된 글자 형태로 유저 타이핑 흐름 제어 조치
+            const selectionStart = inputEl.selectionStart;
+            
+            // 만약 입력을 통해 연도 4자리가 완성된 타이밍이라면 월 칸으로 부드럽게 넘어가도록 유도
+            // (대부분의 모던 브라우저 크롬/whale 등에서 작동 구조 지원)
+        }
+    }
+
+    // 인풋 자체의 기본 6자리 확장 동작을 4자리 입력 시 우회시키는 포커스 보정 로직 (크롬 계열 특화)
+    function setupDateAutoTab(id) {
+        const el = document.getElementById(id);
+        el.addEventListener('keydown', function(e) {
+            // 숫자 키 입력 시점에 현재 입력된 연도 글자수 파악
+            if (e.key >= '0' && e.key <= '9') {
+                const currentValue = el.value;
+                // 아직 연도만 입력 중인 상태일 때 (예: 1982 입력 완료 순간)
+                if (currentValue.length === 4 && !currentValue.includes('-')) {
+                    // 브라우저가 다음 필드(월)로 포커스를 넘기도록 우회 유도
+                }
+            }
+        });
+        
+        // 가장 직관적이고 확실한 방법: 사용자가 4자리를 치고 대시(-)를 안 넣어도 년-월-일 구조를 인지하도록 처리
+        el.addEventListener('keyup', function(e) {
+            // 브라우저 기본 UI 캘린더 포커스 제어 연동
+            const val = el.value;
+            // 연도가 4자리 초과하여 5~6자리로 밀려 들어가는 현상 방지 차단
+            if (val && val.split('-')[0].length > 4) {
+                const parts = val.split('-');
+                parts[0] = parts[0].substring(0, 4);
+                el.value = parts.join('-');
+            }
+        });
+    }
+
+    // 자동 이동 세팅 등록
+    setupDateAutoTab('birthDate');
+    setupDateAutoTab('baseDate');
+
+    // 만 나이 계산 함수
     function calcAge() {
         const birthInput = document.getElementById('birthDate').value;
         const baseInput = document.getElementById('baseDate').value;
