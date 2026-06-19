@@ -14,15 +14,10 @@
         .calc-card { background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; border-left: 5px solid #6366f1; margin-bottom: 20px; }
         .calc-card.future-card { border-left: 5px solid #3b82f6; margin-bottom: 0; }
         .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-        .date-split-container { display: flex; gap: 8px; align-items: center; }
-        .date-split-container input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 16px; text-align: center; outline: none; }
-        .date-split-container input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
-        .date-split-container span { font-weight: bold; color: #475569; font-size: 14px; }
         .input-row { display: flex; gap: 10px; align-items: center; }
         label { font-size: 14px; color: #475569; font-weight: 600; }
-        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type="number"] { -moz-appearance: textfield; }
-        .future-card input[type="number"] { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; text-align: left; }
+        input[type="date"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; box-sizing: border-box; }
+        input[type="date"]:focus, input[type="number"]:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
         .future-card input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
         .result-box { background: white; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center; min-height: 50px; display: flex; flex-direction: column; justify-content: center; }
         .dday-huge { font-size: 32px; font-weight: 800; color: #4f46e5; }
@@ -43,18 +38,13 @@
     
     <div class="calc-card">
         <div class="input-group">
-            <label>목표 날짜 입력</label>
-            <div class="date-split-container">
-                <input type="number" id="targetYear" placeholder="YYYY" oninput="autoTab(this, 4, 'targetMonth')">
-                <span>년</span>
-                <input type="number" id="targetMonth" placeholder="MM" oninput="autoTab(this, 2, 'targetDay')">
-                <span>월</span>
-                <input type="number" id="targetDay" placeholder="DD" oninput="autoTab(this, 2, null)">
-                <span>일</span>
-            </div>
+            <label>목표 날짜 선택</label>
+            <input type="date" id="targetDate" oninput="validateYear(this); calcDDay();" onchange="calcDDay()">
         </div>
         <div class="result-box" id="ddayResult"></div>
     </div>
+
+    <div style="margin-top: 25px;"></div>
 
     <div class="calc-card future-card">
         <label style="color: #3b82f6; font-size: 16px; font-weight: bold; display: block; margin-bottom: 15px;">🗓️ 오늘부터 몇 일째 되는 날은?</label>
@@ -69,45 +59,44 @@
 </div>
 
 <script>
-    // 오늘 날짜 기준 한달 뒤 날짜 자동 기본 세팅
-    const initDate = new Date();
-    initDate.setMonth(initDate.getMonth() + 1);
-    document.getElementById('targetYear').value = initDate.getFullYear();
-    document.getElementById('targetMonth').value = String(initDate.getMonth() + 1).padStart(2, '0');
-    document.getElementById('targetDay').value = String(initDate.getDate()).padStart(2, '0');
-
-    // 실시간 글자수 감지 후 자동 포커스 이동 (핵심 솔루션)
-    function autoTab(input, maxLen, nextId) {
-        if (input.value.length > maxLen) {
-            input.value = input.value.slice(0, maxLen);
+    // 날짜 연도 4자리 자동 튕기기 및 초과 차단 함수 (핵심 솔루션)
+    function validateYear(inputEl) {
+        const dateVal = inputEl.value; // YYYY-MM-DD 형식
+        if (!dateVal) return;
+        
+        const yearPart = dateVal.split('-')[0];
+        
+        // 사용자가 키보드로 연도를 4자리 입력한 직후 순간 포커스 보정
+        if (yearPart && yearPart.length === 4) {
+            // 브라우저의 내부 포커스를 다음 세그먼트(월)로 강제 이동 유도
+            // 대다수 모던 브라우저에서 날짜창에 4자리 입력 후 우측 화살표를 누른 효과를 줍니다.
+            if (event && event.inputType !== 'deleteContentBackward') {
+                const stepRightEvent = new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight', code: 'ArrowRight' });
+                inputEl.dispatchEvent(stepRightEvent);
+            }
         }
-        if (input.value.length === maxLen && nextId) {
-            document.getElementById(nextId).focus();
-            document.getElementById(nextId).select();
+        
+        // 혹시라도 밀려서 5~6자리가 찍혔다면 4자리로 강제 컷트
+        if (yearPart && yearPart.length > 4) {
+            const parts = dateVal.split('-');
+            parts[0] = yearPart.substring(0, 4);
+            inputEl.value = parts.join('-');
         }
-        calcDDay();
     }
 
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    document.getElementById('targetDate').value = nextMonth.toISOString().split('T')[0];
+
     function calcDDay() {
-        const y = document.getElementById('targetYear').value;
-        const m = document.getElementById('targetMonth').value;
-        const d = document.getElementById('targetDay').value;
+        const targetInput = document.getElementById('targetDate').value;
         const resultDiv = document.getElementById('ddayResult');
-        
-        if(!y || !m || !d || m < 1 || m > 12 || d < 1 || d > 31) {
-            resultDiv.innerHTML = `<span style="color:#94a3b8;">올바른 날짜를 입력해 주세요.</span>`;
-            return;
-        }
+        if (!targetInput) return;
 
         const today = new Date();
-        const target = new Date(`${y}-${m}-${d}`);
+        const target = new Date(targetInput);
         today.setHours(0,0,0,0);
         target.setHours(0,0,0,0);
-
-        if (isNaN(target.getTime())) {
-            resultDiv.innerHTML = `<span style="color:#ef4444; font-weight:bold;">존재하지 않는 날짜입니다.</span>`;
-            return;
-        }
 
         const diffTime = target - today;
         const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
@@ -125,10 +114,12 @@
     function calcFutureDate() {
         const daysInput = document.getElementById('daysInput').value;
         const resultDiv = document.getElementById('futureResult');
+        
         if (!daysInput || daysInput <= 0) {
             resultDiv.innerHTML = `<span style="color:#94a3b8;">숫자를 입력해 주세요.</span>`;
             return;
         }
+
         const targetDays = parseInt(daysInput);
         const today = new Date();
         today.setHours(0,0,0,0);
@@ -136,9 +127,15 @@
         const futureDate = new Date(today);
         futureDate.setDate(today.getDate() + (targetDays - 1));
 
+        const year = futureDate.getFullYear();
+        const month = futureDate.getMonth() + 1;
+        const date = futureDate.getDate();
+
         const week = ['일', '월', '화', '수', '목', '금', '토'];
+        const dayOfWeek = week[futureDate.getDay()];
+
         resultDiv.innerHTML = `
-            <span class="future-huge">${futureDate.getFullYear()}년 ${futureDate.getMonth() + 1}월 ${futureDate.getDate()}일 (${week[futureDate.getDay()]})</span>
+            <span class="future-huge">${year}년 ${month}월 ${date}일 (${dayOfWeek})</span>
             <div class="sub-info">💡 오늘을 1일로 잡았을 때, <b>${targetDays}일째</b> 되는 날입니다.</div>
         `;
     }
