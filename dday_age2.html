@@ -12,11 +12,14 @@
         .wrapper { width: 100%; max-width: 480px; background: white; padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.06); box-sizing: border-box; }
         h2 { text-align: center; color: #1e293b; margin-bottom: 25px; font-size: 22px; }
         .calc-card { background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; border-left: 5px solid #ec4899; }
-        .input-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 15px; }
         .input-item { display: flex; flex-direction: column; gap: 6px; }
+        .date-split-container { display: flex; gap: 6px; align-items: center; }
+        .date-split-container input { flex: 1; padding: 11px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; text-align: center; outline: none; }
+        .date-split-container input:focus { border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1); }
         label { font-size: 14px; color: #475569; font-weight: 600; }
-        input[type="date"] { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; box-sizing: border-box; }
-        input[type="date"]:focus { border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1); }
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
         .result-box { background: white; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center; min-height: 50px; display: flex; flex-direction: column; justify-content: center; }
         .age-huge { font-size: 32px; font-weight: 800; color: #db2777; }
         .sub-info { font-size: 13px; color: #64748b; margin-top: 6px; }
@@ -36,82 +39,71 @@
         <div class="input-group">
             <div class="input-item">
                 <label>생년월일 입력</label>
-                <input type="date" id="birthDate" oninput="handleDateInput(this); calcAge();" onchange="calcAge()">
+                <div class="date-split-container">
+                    <input type="number" id="birthYear" placeholder="YYYY" oninput="autoTab(this, 4, 'birthMonth')">
+                    <span>년</span>
+                    <input type="number" id="birthMonth" placeholder="MM" oninput="autoTab(this, 2, 'birthDay')">
+                    <span>월</span>
+                    <input type="number" id="birthDay" placeholder="DD" oninput="autoTab(this, 2, 'baseYear')">
+                    <span>일</span>
+                </div>
             </div>
             <div class="input-item">
-                <label>기준일 (기본:오늘)</label>
-                <input type="date" id="baseDate" oninput="handleDateInput(this); calcAge();" onchange="calcAge()">
+                <label>기준일 입력</label>
+                <div class="date-split-container">
+                    <input type="number" id="baseYear" placeholder="YYYY" oninput="autoTab(this, 4, 'baseMonth')">
+                    <span>년</span>
+                    <input type="number" id="baseMonth" placeholder="MM" oninput="autoTab(this, 2, 'baseDay')">
+                    <span>월</span>
+                    <input type="number" id="baseDay" placeholder="DD" oninput="autoTab(this, 2, null)">
+                    <span>일</span>
+                </div>
             </div>
         </div>
         <div class="result-box" id="ageResult">
-            <span style="color:#94a3b8;">생년월일을 입력해 주세요.</span>
+            <span style="color:#94a3b8;">정확한 생년월일을 입력해 주세요.</span>
         </div>
     </div>
 </div>
 
 <script>
-    // 페이지 로드 시 오늘 날짜 기본 세팅
-    document.getElementById('baseDate').value = new Date().toISOString().split('T')[0];
+    // 오늘 날짜 기준으로 기준일 기본 세팅
+    const today = new Date();
+    document.getElementById('baseYear').value = today.getFullYear();
+    document.getElementById('baseMonth').value = String(today.getMonth() + 1).padStart(2, '0');
+    document.getElementById('baseDay').value = String(today.getDate()).padStart(2, '0');
 
-    // 키보드 직접 입력 시 4자리/2자리 타이핑하면 다음 칸으로 강제 이동시키는 함수
-    function handleDateInput(inputEl) {
-        // 유저가 키보드로 직접 타이핑 중인 값(가상 값)을 체크
-        const val = inputEl.value;
-        
-        // 브라우저의 기본 date 인풋 입력 상태 감지
-        if (document.activeElement === inputEl) {
-            // 인풋 내부의 텍스트 선택 영역 정보를 이용해 현재 커서가 어디 있는지 파악하고 포커스 이동을 제어합니다.
-            // 단, 일반적인 date 타입은 스크립트만으로 내부 세그먼트(년/월/일) 이동이 까다로우므로 
-            // 유저가 연속 입력할 때 연도 자릿수가 4자리가 채워지면 탭(Tab) 키를 누른 것처럼 동작하게 이벤트를 보정합니다.
-            
-            // 인풋창에 입력된 글자 형태로 유저 타이핑 흐름 제어 조치
-            const selectionStart = inputEl.selectionStart;
-            
-            // 만약 입력을 통해 연도 4자리가 완성된 타이밍이라면 월 칸으로 부드럽게 넘어가도록 유도
-            // (대부분의 모던 브라우저 크롬/whale 등에서 작동 구조 지원)
+    function autoTab(input, maxLen, nextId) {
+        if (input.value.length > maxLen) {
+            input.value = input.value.slice(0, maxLen);
         }
+        if (input.value.length === maxLen && nextId) {
+            document.getElementById(nextId).focus();
+            document.getElementById(nextId).select();
+        }
+        calcAge();
     }
 
-    // 인풋 자체의 기본 6자리 확장 동작을 4자리 입력 시 우회시키는 포커스 보정 로직 (크롬 계열 특화)
-    function setupDateAutoTab(id) {
-        const el = document.getElementById(id);
-        el.addEventListener('keydown', function(e) {
-            // 숫자 키 입력 시점에 현재 입력된 연도 글자수 파악
-            if (e.key >= '0' && e.key <= '9') {
-                const currentValue = el.value;
-                // 아직 연도만 입력 중인 상태일 때 (예: 1982 입력 완료 순간)
-                if (currentValue.length === 4 && !currentValue.includes('-')) {
-                    // 브라우저가 다음 필드(월)로 포커스를 넘기도록 우회 유도
-                }
-            }
-        });
-        
-        // 가장 직관적이고 확실한 방법: 사용자가 4자리를 치고 대시(-)를 안 넣어도 년-월-일 구조를 인지하도록 처리
-        el.addEventListener('keyup', function(e) {
-            // 브라우저 기본 UI 캘린더 포커스 제어 연동
-            const val = el.value;
-            // 연도가 4자리 초과하여 5~6자리로 밀려 들어가는 현상 방지 차단
-            if (val && val.split('-')[0].length > 4) {
-                const parts = val.split('-');
-                parts[0] = parts[0].substring(0, 4);
-                el.value = parts.join('-');
-            }
-        });
-    }
-
-    // 자동 이동 세팅 등록
-    setupDateAutoTab('birthDate');
-    setupDateAutoTab('baseDate');
-
-    // 만 나이 계산 함수
     function calcAge() {
-        const birthInput = document.getElementById('birthDate').value;
-        const baseInput = document.getElementById('baseDate').value;
+        const by = document.getElementById('birthYear').value;
+        const bm = document.getElementById('birthMonth').value;
+        const bd = document.getElementById('birthDay').value;
+        
+        const uy = document.getElementById('baseYear').value;
+        const um = document.getElementById('baseMonth').value;
+        const ud = document.getElementById('baseDay').value;
+        
         const resultDiv = document.getElementById('ageResult');
-        if (!birthInput || !baseInput) return;
 
-        const birth = new Date(birthInput);
-        const base = new Date(baseInput);
+        if (!by || !bm || !bd || !uy || !um || !ud) return;
+
+        const birth = new Date(`${by}-${bm}-${bd}`);
+        const base = new Date(`${uy}-${um}-${ud}`);
+
+        if (isNaN(birth.getTime()) || isNaN(base.getTime())) {
+            resultDiv.innerHTML = `<span style="color:#ef4444;">유효하지 않은 날짜가 있습니다.</span>`;
+            return;
+        }
 
         let age = base.getFullYear() - birth.getFullYear();
         const monthDiff = base.getMonth() - birth.getMonth();
