@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>나의 시간은 얼마일까?</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: #1e293b; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input { padding: 15px; border-radius: 10px; border: none; width: 200px; font-size: 16px; }
+        button { padding: 15px 30px; border-radius: 10px; border: none; background: #f59e0b; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        #money { font-size: 48px; color: #f59e0b; font-weight: bold; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>지금 이 순간, 당신의 가치</h1>
+        <input type="number" id="salary" placeholder="연봉 입력 (단위: 만원)">
+        <br>
+        <button onclick="startCounter()">측정 시작</button>
+        <div id="money">0.0000 원</div>
+        <p>당신은 지금 초당 이만큼씩 벌고 있습니다!</p>
+    </div>
+
+    <script>
+        let interval;
+        function startCounter() {
+            clearInterval(interval);
+            const salary = document.getElementById('salary').value * 10000;
+            // 주 40시간, 52주 근무 기준 연간 2080시간 근무 가정
+            const hourly = salary / 2080;
+            const perSec = hourly / 3600;
+            let current = 0;
+            
+            interval = setInterval(() => {
+                current += perSec;
+                document.getElementById('money').innerText = current.toFixed(4) + " 원";
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
