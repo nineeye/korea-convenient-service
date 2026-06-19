@@ -2,87 +2,164 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>말투 변환기 | 텍스트 마스터</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 구글 상위 노출용 공백제거 핵심 황금 키워드 매립 -->
+    <title>온라인 공백제거기 | 텍스트 줄바꿈 변환 및 띄어쓰기 압착기</title>
+    <meta name="description" content="설치 없는 무료 온라인 텍스트 공백 제거 사이트입니다. 모든 공백 전면 제거, 줄바꿈을 한 칸 공백으로 변환하는 가공 툴을 제공합니다.">
+    <meta name="keywords" content="공백제거, 공백제거사이트, 텍스트공백제거, 줄바꿈제거, 띄어쓰기없애기">
     <style>
-        body { font-family: sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 800px; }
-        .nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
-        .nav a { padding: 10px; background: #ddd; text-decoration: none; border-radius: 5px; color: #333; }
-        .nav a.active { background: #9b59b6; color: white; }
-        textarea { width: 100%; height: 200px; margin: 15px 0; box-sizing: border-box; padding: 10px; }
-        
-        /* 버튼 그리드 설정 */
-        .btn-group { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
-        .btn-group button { 
-            padding: 10px 5px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-size: 13px; 
-            font-weight: bold; 
-            color: #333; 
+        body { 
+            font-family: 'Pretendard', -apple-system, sans-serif; 
+            background-color: #f0f4f8; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh;
+            margin: 0;
+            justify-content: center;
         }
+        .nav { 
+            display: flex; 
+            gap: 6px; 
+            margin-bottom: 20px; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+        }
+        .nav a { 
+            padding: 10px 16px; 
+            background: #e2e8f0; 
+            color: #475569;
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .nav a:hover {
+            background: #cbd5e1;
+        }
+        .nav a.active { 
+            background: #10b981; /* 공백제거 전용 초록색 테마 컬러 */
+            color: white; 
+        }
+        
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08); 
+            width: 100%; 
+            max-width: 600px; 
+            box-sizing: border-box;
+        }
+        h2 {
+            color: #0f172a;
+            font-size: 22px;
+            margin: 0 0 6px 0;
+            font-weight: 800;
+            text-align: center;
+        }
+        .sub-desc {
+            color: #64748b;
+            font-size: 13px;
+            text-align: center;
+            margin: 0 0 20px 0;
+        }
+        textarea { 
+            width: 100%; 
+            height: 200px; 
+            padding: 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            resize: vertical;
+            background: #f8fafc;
+            line-height: 1.6;
+        }
+        textarea:focus {
+            border-color: #10b981;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        .tool-toolbar {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .btn-action {
+            padding: 12px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-main { background: #10b981; }
+        .btn-main:hover { background: #059669; }
+        
+        .btn-sub { background: #3b82f6; }
+        .btn-sub:hover { background: #2563eb; }
+
+        .btn-full {
+            grid-column: span 2;
+            background: #64748b;
+        }
+        .btn-full:hover { background: #475569; }
     </style>
 </head>
 <body>
 
-<div class="nav">
-    <a href="#">글자수</a>
-    <a href="#">대소문자</a>
-    <a href="#">맞춤법</a>
-    <a href="#" class="active">말투변환</a>
-</div>
-
-<div class="container">
-    <h2>재미있는 말투 변환기</h2>
-    <textarea id="textInput" placeholder="여기에 변환할 문장을 입력하세요..."></textarea>
-    
-    <div class="btn-group">
-        <button style="background: #fdfd96;" onclick="convert('grandma')">👵 할머니</button>
-        <button style="background: #ffb3ba;" onclick="convert('tsundere')">츤데레</button>
-        <button style="background: #bae1ff;" onclick="convert('business')">💼 비즈니스</button>
-        <button style="background: #baffc9;" onclick="convert('ajae')">👴 아재</button>
-        <button style="background: #e6e6fa;" onclick="convert('soldier')">🪖 군인</button>
-        <button style="background: #ffdfba;" onclick="convert('mz')">📱 MZ세대</button>
-        <button style="background: #d8bfd8;" onclick="convert('chuuni')">👿 중2병</button>
-        <button style="background: #ffffba;" onclick="convert('sageuk')">👑 사극</button>
-        
-        <button style="background: #add8e6;" onclick="convert('robot')">🤖 로봇</button>
-        <button style="background: #ffccff;" onclick="convert('baby')">👶 아기</button>
-        <button style="background: #c1e1c1;" onclick="convert('boss')">👔 사장님</button>
-        <button style="background: #ffebcd;" onclick="convert('student')">🎒 초등생</button>
-        <button style="background: #e0ffff;" onclick="convert('foreigner')">🌎 외국인</button>
-        <button style="background: #f0f8ff;" onclick="convert('saturi')">🗣️ 사투리</button>
-        <button style="background: #faebd7;" onclick="convert('rapper')">🎤 래퍼</button>
-        <button style="background: #fff0f5;" onclick="convert('jammin')">🧒 잼민이</button>
+    <!-- 4분할 탭 구조 일치화 -->
+    <div class="nav">
+        <a href="bigsmalltextchange1.html">글자수</a>
+        <a href="bigsmalltextchange2.html">대소문자</a>
+        <a href="bigsmalltextchange3.html">맞춤법</a>
+        <a href="bigsmalltextchange4.html" class="active">공백제거</a>
     </div>
-</div>
 
-<script>
-    function convert(tone) {
-        let text = document.getElementById('textInput').value;
-        if (!text) return;
-        switch(tone) {
-            case 'grandma': text = "허허, " + text.replace(/다\./g, '란다.').replace(/해요/g, '하누나'); break;
-            case 'tsundere': text = text.replace(/다\./g, '야, 알겠어? ') + " ...딱히 너 주려고 한 건 아냐!"; break;
-            case 'business': text = "안녕하십니까, " + text.replace(/다\./g, '바랍니다.'); break;
-            case 'ajae': text = text.replace(/다\./g, '구먼, 껄껄!').replace(/해요/g, '하지 뭐'); break;
-            case 'soldier': text = text.replace(/다\./g, '말입니다.').replace(/요/g, '입니까?'); break;
-            case 'mz': text = text.replace(/다\./g, '임ㅋㅋ').replace(/해요/g, '함!').replace(/진짜/g, '개'); break;
-            case 'chuuni': text = "흐흐.. " + text.replace(/다\./g, '한다.. 큭큭..').replace(/해요/g, '할뿐이지..'); break;
-            case 'sageuk': text = text.replace(/다\./g, '하오니,').replace(/해요/g, '하옵나이다.'); break;
-            case 'robot': text = "[SYSTEM] " + text.replace(/다\./g, '완료되었습니다.'); break;
-            case 'baby': text = text.replace(/다\./g, '쪄요~').replace(/해요/g, '해쪄요!'); break;
-            case 'boss': text = text.replace(/다\./g, '알겠나?').replace(/해요/g, '해두게.'); break;
-            case 'student': text = text.replace(/다\./g, '했음!').replace(/해요/g, '함 헤헤'); break;
-            case 'foreigner': text = "오우, " + text.replace(/다\./g, '해요~ 예스!'); break;
-            case 'saturi': text = text.replace(/다\./g, '데이~').replace(/해요/g, '하능가?'); break;
-            case 'rapper': text = "Yo, " + text.replace(/다\./g, 'Yeah!').replace(/해요/g, 'Check it!'); break;
-            case 'jammin': text = text.replace(/다\./g, '라고요오?').replace(/해요/g, '하거든여!!'); break;
+    <div class="container">
+        <h2>🚫 온라인 텍스트 공백제거기</h2>
+        <p class="sub-desc">불필요한 띄어쓰기나 원치 않는 줄바꿈을 원클릭으로 정돈하세요.</p>
+        
+        <textarea id="textInput" placeholder="가공할 텍스트를 입력하거나 붙여넣으세요..."></textarea>
+        
+        <div class="tool-toolbar">
+            <button class="btn-action btn-main" onclick="removeSpaces()">🚫 모든 공백 제거</button>
+            <button class="btn-action btn-sub" onclick="convertLines()">↩️ 줄바꿈을 한 칸 공백으로</button>
+            <button class="btn-action btn-full" onclick="copyText()">📋 가공된 결과 전체 복사</button>
+        </div>
+    </div>
+
+    <script>
+        // 모든 스페이스, 탭, 엔터 압착 제거
+        function removeSpaces() {
+            const textarea = document.getElementById('textInput');
+            if(!textarea.value) { alert("📌 가공할 텍스트를 먼저 입력해 주세요!"); return; }
+            textarea.value = textarea.value.replace(/\s/g, "");
         }
-        document.getElementById('textInput').value = text;
-    }
-</script>
 
+        // 엔터(줄바꿈)를 부드럽게 띄어쓰기 한 칸으로 교체
+        function convertLines() {
+            const textarea = document.getElementById('textInput');
+            if(!textarea.value) { alert("📌 가공할 텍스트를 먼저 입력해 주세요!"); return; }
+            textarea.value = textarea.value.replace(/\n/g, " ");
+        }
+
+        // 전체 복사 기능
+        function copyText() {
+            const textarea = document.getElementById('textInput');
+            if(!textarea.value) { alert("📌 복사할 내용이 없습니다!"); return; }
+            textarea.select();
+            document.execCommand('copy');
+            alert("📋 가공 완료된 텍스트가 클립보드에 복사되었습니다!");
+        }
+    </script>
 </body>
 </html>
