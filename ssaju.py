@@ -10,7 +10,11 @@ class Saju:
         
         # 모델 이름을 'gemini-1.5-flash' 대신 
         # API에서 가장 먼저 인식하는 기본 모델로 설정합니다.
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
+        # 수정 전
+# self.model = genai.GenerativeModel("gemini-1.5-flash")
+
+# 수정 후: 
+self.model = genai.GenerativeModel("gemini-1.5-flash-latest")
 
     def get_fortune(self):
         try:
