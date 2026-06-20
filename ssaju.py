@@ -5,10 +5,9 @@ class Saju:
     def __init__(self, name, birth_date):
         self.name = name
         self.birth_date = birth_date
-        # 환경변수에서 API 키 가져오기
         genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-        # 가장 안정적인 모델 호출
-        self.model = genai.GenerativeModel("gemini-pro")
+        # 모델을 가장 범용적인 'gemini-1.5-flash'로 설정합니다.
+        self.model = genai.GenerativeModel("gemini-1.5-flash")
 
     def get_fortune(self):
         try:
