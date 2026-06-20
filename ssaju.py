@@ -5,16 +5,8 @@ class Saju:
     def __init__(self, name, birth_date):
         self.name = name
         self.birth_date = birth_date
-        # API 키 설정
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        
-        # 모델 이름을 'gemini-1.5-flash' 대신 
-        # API에서 가장 먼저 인식하는 기본 모델로 설정합니다.
-        # 수정 전
-# self.model = genai.GenerativeModel("gemini-1.5-flash")
-
-# 수정 후: 
-self.model = genai.GenerativeModel("gemini-1.5-flash-latest")
+        self.model = genai.GenerativeModel("gemini-1.5-flash")
 
     def get_fortune(self):
         try:
@@ -22,4 +14,4 @@ self.model = genai.GenerativeModel("gemini-1.5-flash-latest")
             response = self.model.generate_content(prompt)
             return response.text
         except Exception as e:
-            return f"운세를 불러오는 중 오류가 발생했습니다: {str(e)}"
+            return f"오류 발생: {str(e)}"
