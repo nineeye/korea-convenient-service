@@ -1,24 +1,181 @@
-# 1. 라이브러리 설치가 필요합니다: pip install ssaju
-from ssaju import Saju
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BizShot AI - 나의 숨겨진 재물운 찾기</title>
+    <style>
+        body {
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            padding: 30px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-size: 0.85em;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+        button.submit-btn {
+            width: 100%;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button.submit-btn:hover {
+            background-color: #1557b0;
+        }
+        /* 결과창 스타일 */
+        #result-section {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #1a73e8;
+        }
+        .result-text {
+            font-size: 0.95em;
+            line-height: 1.6;
+            color: #333;
+        }
+        .slogan {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed #ccc;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: #555;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .action-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background-color: #ff6b6b;
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
 
-def test_saju_engine():
-    print("=== BizShot AI: 사주 엔진 데이터 테스트 ===")
-    
-    # 가상의 사용자 정보 입력 (나중에 웹에서 입력받을 데이터)
-    try:
-        saju = Saju(1990, 5, 15, 14, gender='male')
-        pillars = saju.get_four_pillars()
-        
-        print("\n[데이터 확인 완료]")
-        # pillars는 딕셔너리 형태로 년, 월, 일, 시의 정보를 담고 있습니다.
-        for pillar, data in pillars.items():
-            print(f"{pillar}: {data}")
-            
-        print("\n=== 데이터 추출 성공! 이 데이터를 GPT에게 던지면 됩니다. ===")
-        
-    except Exception as e:
-        print(f"에러 발생: {e}")
-        print("라이브러리가 설치되어 있는지 확인해주세요 (pip install ssaju)")
+<div class="container">
+    <h2>💰 BizShot AI 재물운 상담</h2>
+    <p class="subtitle">타고난 나의 재물 그릇을 확인해보세요</p>
 
-if __name__ == "__main__":
-    test_saju_engine()
+    <div id="input-section">
+        <div class="form-group">
+            <label for="birth-year">태어난 연도 (예: 1990)</label>
+            <input type="number" id="birth-year" placeholder="1990" required>
+        </div>
+        <div class="form-group">
+            <label for="birth-month">태어난 월</label>
+            <select id="birth-month">
+                <option value="1">1월</option><option value="2">2월</option>
+                <option value="3">3월</option><option value="4">4월</option>
+                <option value="5">5월</option><option value="6">6월</option>
+                <option value="7">7월</option><option value="8">8월</option>
+                <option value="9">9월</option><option value="10">10월</option>
+                <option value="11">11월</option><option value="12">12월</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="birth-day">태어난 일</label>
+            <input type="number" id="birth-day" placeholder="15" required>
+        </div>
+        <button class="submit-btn" onclick="showResult()">내 재물운 확인하기</button>
+    </div>
+
+    <div id="result-section">
+        <h3 style="margin-top:0; color:#1a73e8;">✨ 당신의 재물운 분석 결과</h3>
+        <div class="result-text" id="ai-response">
+            </div>
+        
+        <div class="slogan">
+            오늘의 사주팔자는 여기까지입니다.<br><br>
+            운이란 단순히 타고나는 것이 아니라, 당신이 노력하고 변하기만 한다면 그 길로 한층 더 가깝게 다가갈 수 있습니다. BizShot AI가 당신의 그 걸음을 응원합니다.
+        </div>
+
+        <a href="#" class="action-btn">내 운을 바꾸는 습관 만들기 🚀</a>
+    </div>
+</div>
+
+<script>
+    // 화면 단에서 임시로 결과를 보여주기 위한 자바스크립트 로직입니다.
+    // 추후 이 부분을 파이썬 서버와 연동하여 진짜 AI 답변을 받아오게 됩니다.
+    function showResult() {
+        const year = document.getElementById('birth-year').value;
+        const month = document.getElementById('birth-month').value;
+        
+        if(!year) {
+            alert('태어난 연도를 입력해주세요!');
+            return;
+        }
+
+        // 입력창 숨기고 결과창 보여주기
+        document.getElementById('input-section').style.display = 'none';
+        document.getElementById('result-section').style.display = 'block';
+
+        // 태어난 달에 따라 다른 마케팅 멘트를 보여주는 간단한 로직 (비용 0원 테스트용)
+        let fortuneText = "";
+        if (month % 3 === 0) {
+            fortuneText = "당신은 본래 재물을 끌어당기는 자력이 강한 사주입니다. 하지만 그 에너지가 가끔 흩어지는 경향이 있네요. <strong>'선택과 집중'</strong>이 올해 당신의 지갑을 두껍게 만들어줄 핵심 키워드입니다. 주변의 정보에 흔들리지 말고 본인의 직감을 믿어보세요!";
+        } else if (month % 2 === 0) {
+            fortuneText = "차곡차곡 쌓아올리는 대기만성형 재물운을 가지고 계시군요! 한방을 노리기보다는 꾸준한 자기 관리와 투자가 결국 큰 빛을 발하게 됩니다. 지금 당장 눈앞의 이익보다 <strong>나 자신의 가치(체력, 지식)</strong>를 높이는 데 투자하세요.";
+        } else {
+            fortuneText = "사람이 곧 재물인 사주입니다! 당신의 재물운은 사람과의 관계에서 크게 열립니다. 평소 연락하지 않던 지인에게 안부를 묻거나, 새로운 모임에 나가는 것이 생각지도 못한 금전적 기회로 연결될 수 있습니다. <strong>긍정적인 에너지</strong>를 유지하는 것이 돈을 부르는 비결입니다.";
+        }
+
+        document.getElementById('ai-response').innerHTML = fortuneText;
+    }
+</script>
+
+</body>
+</html>
