@@ -1,23 +1,15 @@
-# ssaju.py
+import os
+import google.generativeai as genai
 
 class Saju:
     def __init__(self, name, birth_date):
         self.name = name
         self.birth_date = birth_date
+        # 환경변수에서 키를 불러와 설정
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model = genai.GenerativeModel("gemini-pro")
 
     def get_fortune(self):
-        # 여기에 나중에 AI 연동 코드가 들어갈 자리입니다.
-        return f"{self.name}님의 {self.birth_date} 사주 결과: 오늘은 아주 좋은 날입니다!"
-
-# 만약 다른 기능이 더 필요하다면 아래에 함수를 추가하세요.
-
-import random
-
-class Saju:
-    def __init__(self, name, birth_date):
-        self.name = name
-        self.birth_date = birth_date
-
-    def get_fortune(self):
-        fortunes = ["대박 날 거예요!", "오늘은 조심하세요.", "평범한 하루가 될 거예요.", "귀인을 만날 운입니다."]
-        return f"{self.name}님의 사주 결과: {random.choice(fortunes)}"
+        prompt = f"{self.name}님의 생년월일은 {self.birth_date}입니다. 이 정보를 바탕으로 오늘 하루의 운세를 사주 풀이 방식으로 아주 흥미롭고 구체적으로 설명해주세요."
+        response = self.model.generate_content(prompt)
+        return response.text
