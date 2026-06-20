@@ -5,8 +5,9 @@ class Saju:
     def __init__(self, name, birth_date):
         self.name = name
         self.birth_date = birth_date
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        self.model = genai.GenerativeModel("gemini-pro")
+        genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+        # 모델을 가장 범용적인 'gemini-1.5-flash'로 설정합니다.
+        self.model = genai.GenerativeModel("gemini-1.5-flash")
 
     def get_fortune(self):
         try:
