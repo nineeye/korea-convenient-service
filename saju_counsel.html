@@ -1,0 +1,24 @@
+# 1. 라이브러리 설치가 필요합니다: pip install ssaju
+from ssaju import Saju
+
+def test_saju_engine():
+    print("=== BizShot AI: 사주 엔진 데이터 테스트 ===")
+    
+    # 가상의 사용자 정보 입력 (나중에 웹에서 입력받을 데이터)
+    try:
+        saju = Saju(1990, 5, 15, 14, gender='male')
+        pillars = saju.get_four_pillars()
+        
+        print("\n[데이터 확인 완료]")
+        # pillars는 딕셔너리 형태로 년, 월, 일, 시의 정보를 담고 있습니다.
+        for pillar, data in pillars.items():
+            print(f"{pillar}: {data}")
+            
+        print("\n=== 데이터 추출 성공! 이 데이터를 GPT에게 던지면 됩니다. ===")
+        
+    except Exception as e:
+        print(f"에러 발생: {e}")
+        print("라이브러리가 설치되어 있는지 확인해주세요 (pip install ssaju)")
+
+if __name__ == "__main__":
+    test_saju_engine()
