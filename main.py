@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from ssaju import Saju
 
@@ -20,11 +20,8 @@ def get_index():
     </html>
     """
 
-@app.get("/fortune", response_class=HTMLResponse)
+@app.get("/fortune")
 def get_fortune(name: str, birth_date: str):
-    try:
-        saju_helper = Saju(name=name, birth_date=birth_date)
-        result = saju_helper.get_fortune()
-        return HTMLResponse(content=f"<h1>{name}님의 운세</h1><p>{result}</p><a href='/'>다시 하기</a>")
-    except Exception as e:
-        return HTMLResponse(content=f"<h1>오류 발생</h1><p>{str(e)}</p><a href='/'>다시 하기</a>")
+    saju_helper = Saju(name=name, birth_date=birth_date)
+    result = saju_helper.get_fortune()
+    return HTMLResponse(content=f"<h1>{name}님의 운세</h1><p>{result}</p><a href='/'>다시 하기</a>")
