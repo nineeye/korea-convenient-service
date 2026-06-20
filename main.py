@@ -71,3 +71,23 @@ async def get_fortune(user: UserInfo):
         
     except Exception as e:
         return {"result": f"앗, 에너지를 읽는 중 오류가 발생했어요. 잠시 후 다시 시도해주세요. ({str(e)})"}
+
+
+
+
+from fastapi import FastAPI
+from ssaju import Saju  # 우리가 만든 파일
+
+app = FastAPI()
+
+# 메인 페이지에 접속했을 때 나올 내용
+@app.get("/")
+def read_root():
+    return {"message": "반갑습니다! 사주 서비스에 오신 것을 환영합니다."}
+
+# 사주 결과 보기 예시 경로
+@app.get("/fortune/{name}")
+def get_user_fortune(name: str):
+    saju_data = Saju(name=name, birth_date="2026-06-20")
+    return {"result": saju_data.get_fortune()}
+
