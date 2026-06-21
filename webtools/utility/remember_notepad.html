@@ -3,102 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>온라인 실시간 자동 저장 임시 메모장</title>
-    <meta name="description" content="타이핑하는 즉시 브라우저에 안전하게 자동 저장되어 날아가지 않는 휘발성 방지 임시 메모장입니다.">
-    <meta name="keywords" content="임시메모장, 자동저장메모장, 온라인메모장, 웹메모장, 텍스트저장">
+    <title>자동 저장 임시 메모장</title>
     <style>
-        body { 
-            font-family: 'Pretendard', -apple-system, sans-serif; 
-            background-color: #f0f4f8; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh;
-            margin: 0;
-            justify-content: center;
-        }
-        .nav { display: flex; gap: 4px; margin-bottom: 20px; justify-content: center; width: 100%; max-width: 700px; }
-        .nav a { flex: 1; text-align: center; padding: 10px 4px; background: #e2e8f0; color: #475569; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700; transition: all 0.2s; white-space: nowrap; }
-        .nav a:hover { background: #cbd5e1; }
+        body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f0f4f8; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
+        .nav { display: flex; gap: 8px; margin-bottom: 25px; justify-content: center; width: 100%; max-width: 600px; }
+        .nav a { flex: 1; text-align: center; padding: 12px 4px; background: #e2e8f0; color: #475569; text-decoration: none; border-radius: 12px; font-size: 14px; font-weight: 700; transition: all 0.2s; }
         .nav a.active { background: #f59e0b; color: white; }
         
-        .container { 
-            background: white; padding: 30px; border-radius: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.08); 
-            width: 100%; max-width: 700px; box-sizing: border-box; display: flex; flex-direction: column;
-        }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        h2 { color: #0f172a; font-size: 22px; margin: 0; font-weight: 800; }
-        .save-status { font-size: 13px; color: #10b981; font-weight: 700; opacity: 0; transition: opacity 0.3s ease; background: #ecfdf5; padding: 4px 10px; border-radius: 20px; border: 1px solid #a7f3d0; }
-        .sub-desc { color: #64748b; font-size: 13px; text-align: left; margin: 0 0 20px 0; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 600px; box-sizing: border-box; }
+        h2 { color: #0f172a; font-size: 22px; margin: 0 0 10px 0; font-weight: 800; }
+        .sub-desc { color: #64748b; font-size: 14px; margin-bottom: 20px; }
         
-        textarea { 
-            width: 100%; height: 280px; padding: 18px; border: 1px solid #cbd5e1; border-radius: 12px;
-            font-size: 15px; box-sizing: border-box; outline: none; resize: vertical; background: #f8fafc; line-height: 1.6; margin-bottom: 15px;
-        }
-        textarea:focus { border-color: #f59e0b; background: white; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); }
-        
-        .tool-toolbar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .btn-action { padding: 13px; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .btn-main { background: #f59e0b; } .btn-main:hover { background: #d97706; }
-        .btn-clear { background: #ef4444; } .btn-clear:hover { background: #dc2626; }
-        
-        @media (max-width: 600px) { .nav { gap: 2px; } .nav a { font-size: 11px; padding: 8px 2px; } }
+        textarea { width: 100%; height: 300px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; background: #f8fafc; resize: vertical; }
+        .tool-toolbar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .btn-action { padding: 14px; color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .btn-main { background: #f59e0b; } .btn-clear { background: #ef4444; }
     </style>
 </head>
 <body>
 
     <div class="nav">
-        <a href="/index.html" style="background: #0f172a; color: white;">🏠 홈</a>
-        <a href="randompassword.html">초강력 비밀번호 생성기</a>
-        <a href="remember_notepad.html" class="active">창꺼도 기억하는 메모장</a>
+        <a href="/index.html">🏠 홈</a>
+        <a href="/webtools/utility/randompassword.html">비밀번호 생성기</a>
+        <a href="/webtools/utility/remember_notepad.html" class="active">임시 메모장</a>
     </div>
 
     <div class="container">
-        <div class="header">
-            <h2>📄 자동 저장 임시 메모장</h2>
-            <span class="save-status" id="saveStatus">✓ 실시간 자동 저장됨</span>
-        </div>
-        <p class="sub-desc">내용을 입력하면 브라우저에 즉시 백업되어 창을 닫거나 새로고침해도 글이 안전하게 유지됩니다.</p>
+        <h2>📄 자동 저장 임시 메모장</h2>
+        <p class="sub-desc">창을 닫아도 내용이 유지됩니다.</p>
         
-        <textarea id="noteInput" placeholder="여기에 자유롭게 내용을 입력하고 가공해 보세요..."></textarea>
+        <textarea id="noteInput" placeholder="여기에 입력하세요..."></textarea>
         
         <div class="tool-toolbar">
-            <button class="btn-action btn-main" onclick="copyNote()">📋 전체 내용 복사</button>
-            <button class="btn-action btn-clear" onclick="clearNote()">🗑️ 메모장 전체 비우기</button>
+            <button class="btn-action btn-main" onclick="copyNote()">📋 전체 복사</button>
+            <button class="btn-action btn-clear" onclick="clearNote()">🗑️ 비우기</button>
         </div>
     </div>
 
     <script>
         const noteInput = document.getElementById('noteInput');
-        const saveStatus = document.getElementById('saveStatus');
-        let saveTimeout;
-
-        window.onload = function() {
-            const savedText = localStorage.getItem('savedNote');
-            if (savedText) { noteInput.value = savedText; }
-        };
-
-        noteInput.addEventListener('input', function() {
-            localStorage.setItem('savedNote', noteInput.value);
-            saveStatus.style.opacity = '1';
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => { saveStatus.style.opacity = '0'; }, 1500);
-        });
-
-        function copyNote() {
-            const text = noteInput.value;
-            if (!text.trim()) { alert('📌 복사할 메모 내용이 없습니다!'); return; }
-            navigator.clipboard.writeText(text).then(() => {
-                alert('📋 메모장 내용이 클립보드에 복사되었습니다!\n원하는 도구(글자수/맞춤법 등) 탭으로 이동해 붙여넣으세요.');
-            }).catch(err => { alert('복사 실패: ' + err); });
-        }
-
-        function clearNote() {
-            if (!noteInput.value.trim()) return;
-            const confirmDelete = confirm('⚠️ 정말 모든 메모를 지우시겠습니까?\n삭제 후에는 로컬 데이터가 지워져 복구할 수 없습니다.');
-            if (confirmDelete) { noteInput.value = ''; localStorage.removeItem('savedNote'); noteInput.focus(); }
-        }
+        window.onload = () => noteInput.value = localStorage.getItem('savedNote') || '';
+        noteInput.addEventListener('input', () => localStorage.setItem('savedNote', noteInput.value));
+        function copyNote() { navigator.clipboard.writeText(noteInput.value); alert('복사되었습니다!'); }
+        function clearNote() { if(confirm('모두 지울까요?')) { noteInput.value = ''; localStorage.removeItem('savedNote'); } }
     </script>
 </body>
 </html>
