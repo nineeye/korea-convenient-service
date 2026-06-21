@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+google-genai
+streamlit
+pandas
+numpy
+pdf2docx
