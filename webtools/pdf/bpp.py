@@ -1,33 +1,61 @@
 import streamlit as st
-from pdf2docx import Converter
+import io
 import os
+from pdf2docx import Converter
+from pdf2image import convert_from_bytes
 
-st.set_page_config(page_title="Professional PDF to Word", layout="centered")
+# 페이지 설정
+st.set_page_config(page_title="PDF 올인원 도구", layout="centered")
 
-st.markdown("""
-# 📄 Professional PDF Converter
-고품질 PDF -> Word 변환 서비스입니다.
-""")
+# 사이드바 메뉴 구성
+st.sidebar.title("PDF 도구 모음")
+menu = st.sidebar.selectbox("기능을 선택하세요", ["PDF → Word 변환", "PDF → 이미지 변환"])
 
-uploaded_file = st.file_uploader("PDF 파일을 업로드하세요.", type=["pdf"])
+# 1. PDF → Word 변환 기능
+if menu == "PDF → Word 변환":
+    st.title("📄 PDF → Word 변환기")
+    uploaded_file = st.file_uploader("PDF 파일을 업로드하세요.", type=["pdf"])
 
-if uploaded_file:
-    if st.button("변환 시작하기"):
-        with st.spinner("변환 중입니다. 잠시만 기다려주세요..."):
-            try:
-                # 파일 저장 및 변환
-                pdf_path = "input.pdf"
-                docx_path = "output.docx"
-                with open(pdf_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                
-                cv = Converter(pdf_path)
-                cv.convert(docx_path, start=0, end=None)
-                cv.close()
-                
-                with open(docx_path, "rb") as f:
-                    st.download_button("결과물 다운로드", f, "result.docx")
-                st.success("완벽하게 변환되었습니다!")
-                
-            except Exception as e:
-                st.error("변환 과정에서 오류가 발생했습니다. 파일을 다시 확인해주세요.")
+    if uploaded_file:
+        if st.button("변환 시작하기"):
+            with st.spinner("변환 중입니다. 잠시만 기다려주세요..."):
+                try:
+                    pdf_path = "input.pdf"
+                    docx_path = "output.docx"
+                    with open(pdf_path, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
+                    
+                    cv = Converter(pdf_path)
+                    cv.convert(docx_path, start=0, end=None)
+                    cv.close()
+                    
+                    with open(docx_path, "rb") as f:
+                        st.download_button("결과물 다운로드", f, "result.docx")
+                    st.success("완벽하게 변환되었습니다!")
+                except Exception as e:
+                    st.error("변환 과정에서 오류가 발생했습니다.")
+
+# 2. PDF → 이미지 변환 기능
+elif menu == "PDF → 이미지 변환":
+    st.title("🖼️ PDF → 이미지 변환기")
+    uploaded_file = st.file_uploader("PDF 파일을 업로드하세요", type="pdf")
+
+    if uploaded_file is not None:
+        if st.button("변환 시작"):
+            with st.spinner("변환 중입니다..."):
+                try:
+                    images = convert_from_bytes(uploaded_file.read())
+                    for i, image in enumerate(images):
+                        img_byte_arr = io.BytesIO()
+                        image.save(img_byte_arr, format='PNG')
+                        img_byte_arr = img_byte_arr.getvalue()
+                        
+                        st.image(image, caption=f"페이지 {i+1}")
+                        st.download_button(
+                            label=f"페이지 {i+1} 다운로드",
+                            data=img_byte_arr,
+                            file_name=f"page_{i+1}.png",
+                            mime="image/png"
+                        )
+                except Exception as e:
+                    st.error("변환 중 오류가 발생했습니다. (Poppler가 설치되어 있는지 확인해주세요)")
