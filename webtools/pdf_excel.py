@@ -23,7 +23,7 @@ def convert_pdf_to_excel():
                                 # PDF에서 추출한 데이터를 데이터프레임으로 변환
                                 df = pd.DataFrame(table[1:], columns=table[0])
                                 
-                                # ✨ [핵심 수정] 시트 이름을 안전하게 Page_1, Page_2 형태로 강제 고정
+                                # 시트 이름을 'Page_1', 'Page_2' 형태로 안전하게 강제 고정
                                 sheet_name = f"Page_{i+1}"
                                 
                                 # 엑셀 파일에 시트 기록
@@ -45,5 +45,5 @@ def convert_pdf_to_excel():
                 st.success("🎉 변환 완료! 다운로드 버튼을 눌러주세요.")
                 
             except Exception as e:
-                # 에러 발생 시 명확하게 메시지 출력
+                # 에러 발생 시 원인 출력
                 st.error(f"💥 변경 중 오류 발생: {str(e)}")
