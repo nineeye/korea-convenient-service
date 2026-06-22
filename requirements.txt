@@ -9,3 +9,4 @@ pdf2image
 pypdf
 pdfplumber
 openpyxl
+PyPDF2
