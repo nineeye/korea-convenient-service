@@ -24,7 +24,6 @@ def clean_sheet_name(name, fallback="Sheet"):
     return name.strip()[:31] if name.strip() else fallback
 
 def convert_pdf_to_excel():
-    main()
     st.title("🚀 수학 학습지 PDF ➡️ 엑셀 복원 변환기")
     st.write("PDF 파일을 업로드하면 자동으로 변환이 진행되며 다운로드 버튼이 나타납니다.")
     
@@ -98,5 +97,4 @@ def convert_pdf_to_excel():
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-if __name__ == "__main__":
-    main()
+def main():
