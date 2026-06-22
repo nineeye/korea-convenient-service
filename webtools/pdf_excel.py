@@ -13,7 +13,6 @@ def convert_pdf_to_excel():
                 excel_buffer = io.BytesIO()
                 found_table = False
                 
-                # ExcelWriter 엔진 설정
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
                     with pdfplumber.open(uploaded_file) as pdf:
                         for i, page in enumerate(pdf.pages):
@@ -21,10 +20,11 @@ def convert_pdf_to_excel():
                             if table:
                                 df = pd.DataFrame(table[1:], columns=table[0])
                                 
-                                # [핵심 해결] 
-                                # PDF의 제목이나 파일명을 참조하지 않고 
-                                # 오직 'Page_1', 'Page_2' 식으로 이름을 강제 지정합니다.
+                                # [강제 고정] 절대 PDF 제목을 쓰지 않고 무조건 'Page_1' 형식 사용
                                 sheet_name = f"Page_{i+1}"
+                                
+                                # 💡 실시간 확인용 디버깅 메세지 (화면에 강제로 찍어봅니다)
+                                st.info(f"⚙️ [디버깅] 현재 설정하려는 시트 이름은 무조건 문자가 고정됩니다: {sheet_name}")
                                 
                                 df.to_excel(writer, sheet_name=sheet_name, index=False)
                                 found_table = True
@@ -43,4 +43,5 @@ def convert_pdf_to_excel():
                 st.success("변환 완료!")
                 
             except Exception as e:
-                st.error(f"변환 오류: {str(e)}")
+                # 에러 추적을 위해 문구를 완전히 새로 변경했습니다.
+                st.error(f"💥 [최종 추적] 에러가 발생한 지점의 메시지: {str(e)}")
