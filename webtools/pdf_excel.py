@@ -97,4 +97,5 @@ def convert_pdf_to_excel():
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-def main():
+if __name__ == "__main__":
+    convert_pdf_to_excel()
