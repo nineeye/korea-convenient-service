@@ -2,7 +2,7 @@ import streamlit as st
 import pdfplumber
 import pandas as pd
 import io
-import re  # 🔥 유령 문자 정규식을 위해 추가
+import re
 
 def convert_pdf_to_excel():
     st.subheader("📊 PDF → Excel 변환")
@@ -23,23 +23,23 @@ def convert_pdf_to_excel():
                                 # 1. 데이터프레임 생성
                                 df = pd.DataFrame(table[1:], columns=table[0])
                                 
-                                # 🔥 [핵심 수정] 엑셀 셀 내부의 유령 문자(제어 문자) 청소기 가동!
+                                # 엑셀 셀 내부의 유령 문자(제어 문자) 제거 함수
                                 def remove_illegal_chars(val):
                                     if isinstance(val, str):
-                                        # 엑셀 XML 형식을 망가뜨리는 ASCII 제어 문자 제거 (줄바꿈, 탭 제외)
+                                        # 엑셀 형식을 깨뜨리는 불법 제어 문자들 싹 제거
                                         return re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', val)
                                     return val
                                 
-                                # 데이터프레임 전체 셀에 청소기 적용 (버전 호환성 호환)
+                                # 데이터프레임 전체 셀에 클리닝 적용 (Pandas 버전 호환성 대응)
                                 if hasattr(df, 'map'):
                                     df = df.map(remove_illegal_chars)
-                                \x08else:
+                                else:
                                     df = df.applymap(remove_illegal_chars)
                                 
-                                # 2. 안전한 시트 이름 지정
+                                # 2. 안전한 시트 이름 강제 지정
                                 safe_sheet_name = f"Page_{i+1}"
                                 
-                                # 3. 엑셀 파일에 시트 기록 (이제 안전합니다!)
+                                # 3. 엑셀 파일에 시트 기록
                                 df.to_excel(writer, sheet_name=safe_sheet_name, index=False)
                                 found_table = True
                     
