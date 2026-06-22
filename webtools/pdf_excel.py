@@ -18,15 +18,15 @@ def convert_pdf_to_excel():
                         for i, page in enumerate(pdf.pages):
                             table = page.extract_table()
                             if table:
-                                df = pd.DataFrame(table[1:], columns=table[0])
+                                # 💡 [핵심 수정] 첫 줄 텍스트를 컬럼명(columns=...)으로 지정하지 않고,
+                                # 표 전체를 순수한 '셀 데이터'로 가져옵니다.
+                                df = pd.DataFrame(table)
                                 
-                                # [강제 고정] 절대 PDF 제목을 쓰지 않고 무조건 'Page_1' 형식 사용
+                                # 시트 이름은 가장 안전한 고정 문자열 사용
                                 sheet_name = f"Page_{i+1}"
                                 
-                                # 💡 실시간 확인용 디버깅 메세지 (화면에 강제로 찍어봅니다)
-                                st.info(f"⚙️ [디버깅] 현재 설정하려는 시트 이름은 무조건 문자가 고정됩니다: {sheet_name}")
-                                
-                                df.to_excel(writer, sheet_name=sheet_name, index=False)
+                                # header=False를 추가하여 컬럼명 검증 오류를 완전히 우회합니다.
+                                df.to_excel(writer, sheet_name=sheet_name, header=False, index=False)
                                 found_table = True
                     
                     if not found_table:
@@ -40,8 +40,7 @@ def convert_pdf_to_excel():
                     file_name="converted_data.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
-                st.success("변환 완료!")
+                st.success("변환 완료! 이제 다운로드 버튼을 눌러주세요.")
                 
             except Exception as e:
-                # 에러 추적을 위해 문구를 완전히 새로 변경했습니다.
-                st.error(f"💥 [최종 추적] 에러가 발생한 지점의 메시지: {str(e)}")
+                st.error(f"💥 변환 오류: {str(e)}")
