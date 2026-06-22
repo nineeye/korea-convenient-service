@@ -5,10 +5,12 @@ from webtools.pdf_image import convert_pdf_to_image
 from webtools.pdf_security import manage_pdf_security  
 from webtools.pdf_compress import compress_pdf
 from webtools.pdf_rotate import rotate_pdf
+from webtools.pdf_remove import remove_pages
 
 st.sidebar.title("🛠️ PDF 도구 모음")
 # 4번 메뉴 추가
-menu = ["PDF 병합", "PDF → Word 변환", "PDF → 이미지 변환", "PDF 암호 설정/해제", "PDF 용량 최적화", "PDF 페이지 회전"]
+menu = ["PDF 병합", "PDF → Word 변환", "PDF → 이미지 변환", "PDF 암호 설정/해제", 
+        "PDF 용량 최적화", "PDF 페이지 회전", "PDF 특정 페이지 삭제"]
 choice = st.sidebar.selectbox("기능을 선택하세요", menu)
 
 if choice == "PDF 병합":
@@ -23,3 +25,5 @@ elif choice == "PDF 용량 최적화":
     compress_pdf()
 elif choice == "PDF 페이지 회전":
     rotate_pdf()
+elif choice == "PDF 특정 페이지 삭제":
+    remove_pages()
