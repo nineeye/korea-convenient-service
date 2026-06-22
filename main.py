@@ -23,6 +23,8 @@ elif choice == "PDF → 이미지 변환":
     convert_pdf_to_image()
 elif choice == "PDF → Excel 변환":
     convert_pdf_to_excel()        
+elif choice == "PDF 분할":
+    split_pdf()        
 elif choice == "PDF 암호 설정/해제": # 추가!
     manage_pdf_security()
 elif choice == "PDF 용량 최적화":
