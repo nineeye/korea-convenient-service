@@ -5,7 +5,7 @@ import io
 
 def convert_pdf_to_excel():
     st.subheader("📊 PDF → Excel 변환")
-    uploaded_file = st.file_uploader("표가 포함된 PDF 파일을 업로드하세요", type="pdf")
+    uploaded_file = st.file_uploader("표가 포함된 PDF 파일을 업로드하세요!", type="pdf")
     
     if uploaded_file:
         if st.button("변환 시작"):
