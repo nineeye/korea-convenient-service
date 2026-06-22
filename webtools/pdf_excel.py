@@ -13,26 +13,28 @@ def convert_pdf_to_excel():
                 excel_buffer = io.BytesIO()
                 found_table = False
                 
+                # 1. 엑셀 파일 작성자 오픈
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                    # 2. PDF 파일 오픈
                     with pdfplumber.open(uploaded_file) as pdf:
                         for i, page in enumerate(pdf.pages):
                             table = page.extract_table()
                             if table:
-                                # 💡 [핵심 수정] 첫 줄 텍스트를 컬럼명(columns=...)으로 지정하지 않고,
-                                # 표 전체를 순수한 '셀 데이터'로 가져옵니다.
-                                df = pd.DataFrame(table)
+                                # PDF에서 추출한 데이터를 데이터프레임으로 변환
+                                df = pd.DataFrame(table[1:], columns=table[0])
                                 
-                                # 시트 이름은 가장 안전한 고정 문자열 사용
+                                # ✨ [핵심 수정] 시트 이름을 안전하게 Page_1, Page_2 형태로 강제 고정
                                 sheet_name = f"Page_{i+1}"
                                 
-                                # header=False를 추가하여 컬럼명 검증 오류를 완전히 우회합니다.
-                                df.to_excel(writer, sheet_name=sheet_name, header=False, index=False)
+                                # 엑셀 파일에 시트 기록
+                                df.to_excel(writer, sheet_name=sheet_name, index=False)
                                 found_table = True
                     
                     if not found_table:
                         st.error("PDF에서 표를 찾을 수 없습니다.")
                         return
                 
+                # 3. 다운로드 버튼 생성
                 excel_buffer.seek(0)
                 st.download_button(
                     label="엑셀 파일 다운로드",
@@ -40,7 +42,8 @@ def convert_pdf_to_excel():
                     file_name="converted_data.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
-                st.success("변환 완료! 이제 다운로드 버튼을 눌러주세요.")
+                st.success("🎉 변환 완료! 다운로드 버튼을 눌러주세요.")
                 
             except Exception as e:
-                st.error(f"💥 변환 오류: {str(e)}")
+                # 에러 발생 시 명확하게 메시지 출력
+                st.error(f"💥 변경 중 오류 발생: {str(e)}")
