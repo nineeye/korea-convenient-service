@@ -13,7 +13,7 @@ def convert_pdf_to_excel():
                 excel_buffer = io.BytesIO()
                 found_table = False
                 
-                # ExcelWriter 생성
+                # ExcelWriter 엔진 설정
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
                     with pdfplumber.open(uploaded_file) as pdf:
                         for i, page in enumerate(pdf.pages):
@@ -21,8 +21,8 @@ def convert_pdf_to_excel():
                             if table:
                                 df = pd.DataFrame(table[1:], columns=table[0])
                                 
-                                # [핵심] 시트 이름을 고정된 값으로 강제 지정
-                                # 절대 PDF 제목을 가져오지 않습니다.
+                                # [핵심 해결] 시트 이름을 PDF 제목에서 가져오지 않고 무조건 강제 지정
+                                # 절대 엑셀 규칙을 위반할 수 없는 구조입니다.
                                 sheet_name = f"Page_{i+1}"
                                 
                                 df.to_excel(writer, sheet_name=sheet_name, index=False)
@@ -42,5 +42,5 @@ def convert_pdf_to_excel():
                 st.success("변환 완료!")
                 
             except Exception as e:
-                # 에러 메시지를 명확히 보여줌
-                st.error(f"변환 중 오류 발생: {e}")
+                # 에러 발생 시 구체적인 메시지를 표출
+                st.error(f"변환 오류: {str(e)}")
