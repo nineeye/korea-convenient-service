@@ -19,14 +19,13 @@ def convert_pdf_to_excel():
                         for i, page in enumerate(pdf.pages):
                             table = page.extract_table()
                             if table:
-                                # 1. 데이터 프레임 생성
+                                # 데이터 프레임 생성
                                 df = pd.DataFrame(table[1:], columns=table[0])
                                 
-                                # 2. [핵심 해결] 시트 이름을 PDF 메타데이터와 상관없는 안전한 이름으로 강제 지정
-                                # 절대 엑셀 규칙을 위반할 수 없는 구조입니다.
+                                # [핵심 해결] 시트 이름을 고정된 값으로 강제 지정하여 엑셀 규칙 준수
+                                # PDF의 어떤 긴 제목이나 특수문자도 영향을 주지 않습니다.
                                 sheet_name = f"Page_{i+1}"
                                 
-                                # 3. 엑셀 저장
                                 df.to_excel(writer, sheet_name=sheet_name, index=False)
                                 found_table = True
                     
@@ -44,5 +43,5 @@ def convert_pdf_to_excel():
                 st.success("변환 완료!")
                 
             except Exception as e:
-                # 에러 메시지를 명확히 보여줌
-                st.error(f"변환 오류: {str(e)}")
+                # 에러 발생 시 명확한 원인을 보여줌
+                st.error(f"변환 중 오류 발생: {e}")
