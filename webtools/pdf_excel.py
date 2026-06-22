@@ -19,15 +19,15 @@ def convert_pdf_to_excel():
                         for i, page in enumerate(pdf.pages):
                             table = page.extract_table()
                             if table:
-                                # 데이터가 리스트 형태일 때 처리
+                                # 표 데이터가 있으면 변환
                                 df = pd.DataFrame(table[1:], columns=table[0])
-                                # 시트 이름을 파일명과 상관없이 안전한 형식으로 고정
+                                # 시트 이름을 파일명/제목과 상관없이 'Page_1' 식으로 고정
                                 sheet_name = f"Page_{i+1}"
                                 df.to_excel(writer, sheet_name=sheet_name, index=False)
                                 found_table = True
                     
                     if not found_table:
-                        st.error("PDF에서 표를 찾을 수 없습니다. (이미지 기반 PDF는 OCR이 필요합니다.)")
+                        st.error("PDF에서 표를 찾을 수 없습니다. (이미지 형태의 PDF인가요?)")
                         return
                 
                 excel_buffer.seek(0)
