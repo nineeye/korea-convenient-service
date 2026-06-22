@@ -10,3 +10,7 @@ pypdf
 pdfplumber
 openpyxl
 pypdf
+
+pytesseract
+Pillow
+python-docx
