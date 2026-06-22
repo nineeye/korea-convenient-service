@@ -10,3 +10,4 @@ pypdf
 pdfplumber
 pandas
 openpyxl
+PyPDF2
