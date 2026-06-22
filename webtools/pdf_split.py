@@ -1,6 +1,6 @@
 import streamlit as st
 import io
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf2 import PdfReader, PdfWriter
 import zipfile
 
 def split_pdf():
