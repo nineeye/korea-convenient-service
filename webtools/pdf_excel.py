@@ -23,14 +23,16 @@ def convert_pdf_to_excel():
                                 # 1. 데이터프레임 생성
                                 df = pd.DataFrame(table[1:], columns=table[0])
                                 
-                                # 엑셀 셀 내부의 유령 문자(제어 문자) 제거 함수
+                                # 엑셀 형식을 깨뜨리는 불법 제어 문자 제거 함수
                                 def remove_illegal_chars(val):
                                     if isinstance(val, str):
-                                        # 엑셀 형식을 깨뜨리는 불법 제어 문자들 싹 제거
                                         return re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', val)
                                     return val
                                 
-                                # 데이터프레임 전체 셀에 클리닝 적용 (Pandas 버전 호환성 대응)
+                                # 🔥 [핵심 추가] 표의 제목 줄(열 이름)에 묻은 유령 문자도 싹 청소!
+                                df.columns = [remove_illegal_chars(str(col)) for col in df.columns]
+                                
+                                # 데이터프레임 내부 셀 데이터 청소 (Pandas 버전 대응)
                                 if hasattr(df, 'map'):
                                     df = df.map(remove_illegal_chars)
                                 else:
