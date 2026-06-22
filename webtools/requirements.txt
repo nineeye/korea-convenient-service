@@ -6,3 +6,4 @@ pandas
 numpy
 pdf2docx
 pdf2image
+pypdf
