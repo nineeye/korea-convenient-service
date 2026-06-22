@@ -47,6 +47,3 @@ def convert_pdf_to_excel():
             except Exception as e:
                 # 에러 발생 시 원인 출력
                 st.error(f"💥 변경 중 오류 발생: {str(e)}")
-
-# ⭐️ 중요: 정의한 함수를 실제로 실행하는 코드가 있어야 화면에 나타납니다!
-convert_pdf_to_excel()
