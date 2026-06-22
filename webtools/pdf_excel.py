@@ -23,7 +23,7 @@ def convert_pdf_to_excel():
                                 # PDF에서 추출한 데이터를 데이터프레임으로 변환
                                 df = pd.DataFrame(table[1:], columns=table[0])
                                 
-                                # ⭐️ 에러 원인 완벽 차단: 시트 이름을 무조건 'Page_1', 'Page_2' 영문으로 고정
+                                # 🔥 PDF 본문 내용이 뭐든 상관없이 시트 이름을 'Page_1', 'Page_2'로 강제 고정!
                                 sheet_name = f"Page_{i+1}"
                                 
                                 # 엑셀 파일에 시트 기록
