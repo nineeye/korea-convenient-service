@@ -1,4 +1,10 @@
 import streamlit as st
+
+def add_watermark():
+    st.write("테스트")
+
+
+import streamlit as st
 import io
 
 from pypdf import PdfReader, PdfWriter
