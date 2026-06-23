@@ -64,6 +64,20 @@ def add_watermark():
         value="CONFIDENTIAL"
     )
 
+    font_size = st.slider(
+        "글자 크기",
+        8,
+        30,
+        10
+    )
+    
+    gray_level = st.slider(
+        "투명도",
+        0.3,
+        0.9,
+        0.65
+    )
+    
     if st.button("워터마크 적용"):
 
         try:
