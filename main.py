@@ -37,6 +37,8 @@ elif choice == "PDF → Word 변환":
     convert_pdf_to_word()
 elif choice == "PDF → 이미지 변환":
     convert_pdf_to_image()
+elif choice == "PDF → 이미지 추출":
+    extract_images()
 elif choice == "PDF → Excel 변환":
     convert_pdf_to_excel()  
 elif choice == "PDF OCR":
