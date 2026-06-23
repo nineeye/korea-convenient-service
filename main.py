@@ -10,6 +10,7 @@ from webtools.pdf_excel import convert_pdf_to_excel
 from webtools.pdf_split import split_pdf
 from webtools.pdf_ocr import pdf_ocr 
 from webtools.pdf_watermark import add_watermark
+from webtools.pdf_extract import extract_images
 
 st.sidebar.title("🛠️ PDF 도구 모음")
 
@@ -17,6 +18,7 @@ menu = [
     "PDF 병합",
     "PDF → Word 변환",
     "PDF → 이미지 변환",
+    "PDF → 이미지 추출",
     "PDF → Excel 변환",
     "PDF OCR",
     "PDF 분할",
