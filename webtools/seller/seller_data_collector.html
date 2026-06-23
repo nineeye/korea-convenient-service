@@ -1,1 +1,149 @@
 
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>판매자 데이터 수집기</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    max-width:1200px;
+    margin:30px auto;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+}
+
+textarea{
+    width:100%;
+    height:350px;
+    padding:10px;
+    font-size:14px;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-bottom:10px;
+}
+
+button{
+    padding:10px 15px;
+    margin:5px;
+    cursor:pointer;
+}
+
+.result{
+    margin-top:20px;
+    border:1px solid #ddd;
+    padding:15px;
+}
+
+#output{
+    white-space:pre-wrap;
+    max-height:400px;
+    overflow:auto;
+}
+</style>
+
+</head>
+<body>
+
+<h1>📦 판매자 데이터 수집기</h1>
+
+<label>카테고리명</label>
+<input type="text" id="category" placeholder="예: 유산균">
+
+<label>상품명 붙여넣기</label>
+<textarea id="titles" placeholder="상품명을 한 줄에 하나씩 붙여넣으세요"></textarea>
+
+<div>
+    <button onclick="processData()">중복 제거</button>
+    <button onclick="downloadJSON()">JSON 저장</button>
+    <button onclick="downloadTXT()">TXT 저장</button>
+</div>
+
+<div class="result">
+    <h3>결과</h3>
+    <p>상품 수 : <span id="count">0</span></p>
+    <div id="output"></div>
+</div>
+
+<script>
+
+let cleanedTitles = [];
+
+function processData(){
+
+    const raw = document.getElementById('titles').value;
+
+    const lines = raw
+        .split('\n')
+        .map(v => v.trim())
+        .filter(v => v.length > 0);
+
+    cleanedTitles = [...new Set(lines)];
+
+    document.getElementById('count').innerText = cleanedTitles.length;
+
+    document.getElementById('output').innerText =
+        cleanedTitles.join('\n');
+}
+
+function downloadJSON(){
+
+    if(cleanedTitles.length === 0){
+        alert('먼저 데이터를 처리하세요');
+        return;
+    }
+
+    const category =
+        document.getElementById('category').value || '미분류';
+
+    const data = {
+        category: category,
+        count: cleanedTitles.length,
+        created: new Date().toISOString(),
+        titles: cleanedTitles
+    };
+
+    const blob = new Blob(
+        [JSON.stringify(data,null,2)],
+        {type:'application/json'}
+    );
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = category + '.json';
+    a.click();
+}
+
+function downloadTXT(){
+
+    if(cleanedTitles.length === 0){
+        alert('먼저 데이터를 처리하세요');
+        return;
+    }
+
+    const category =
+        document.getElementById('category').value || '미분류';
+
+    const blob = new Blob(
+        [cleanedTitles.join('\n')],
+        {type:'text/plain'}
+    );
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = category + '.txt';
+    a.click();
+}
+
+</script>
+
+</body>
+</html>
