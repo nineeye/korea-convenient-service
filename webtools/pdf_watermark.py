@@ -6,128 +6,167 @@ from pypdf import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+
 from PIL import Image
 from reportlab.lib.utils import ImageReader
 
-
-def create_watermark(
-    text,
-    font_size,
-    gray_level,
-    watermark_type
+def create_text_watermark(
+text,
+font_size,
+gray_level,
+watermark_type
 ):
 
-    packet = io.BytesIO()
+```
+packet = io.BytesIO()
 
-    pdfmetrics.registerFont(
-        TTFont(
-            "Nanum",
-            "fonts/NanumGothic.ttf"
-        )
+pdfmetrics.registerFont(
+    TTFont(
+        "Nanum",
+        "fonts/NanumGothic.ttf"
+    )
+)
+
+c = canvas.Canvas(packet)
+
+c.setFillGray(gray_level)
+c.setFont("Nanum", font_size)
+
+if watermark_type == "하단 우측":
+
+    c.drawRightString(560, 20, text)
+
+elif watermark_type == "상단 우측":
+
+    c.drawRightString(560, 800, text)
+
+elif watermark_type == "하단 좌측":
+
+    c.drawString(20, 20, text)
+
+elif watermark_type == "상단 좌측":
+
+    c.drawString(20, 800, text)
+
+elif watermark_type == "중앙":
+
+    c.drawCentredString(300, 400, text)
+
+elif watermark_type == "대각선":
+
+    c.saveState()
+
+    c.translate(300, 400)
+
+    c.rotate(45)
+
+    c.drawCentredString(
+        0,
+        0,
+        text
     )
 
-    c = canvas.Canvas(packet)
+    c.restoreState()
 
-    c.setFillGray(gray_level)
-    c.setFont("Nanum", font_size)
+elif watermark_type == "반복":
 
-    if watermark_type == "하단 우측":
+    c.saveState()
 
-        c.drawRightString(
-            560,
-            20,
-            text
-        )
+    c.rotate(35)
 
-    elif watermark_type == "상단 우측":
+    for x in range(-200, 900, 250):
 
-        c.drawRightString(
-            560,
-            800,
-            text
-        )
+        for y in range(-200, 900, 180):
 
-    elif watermark_type == "하단 좌측":
+            c.drawString(
+                x,
+                y,
+                text
+            )
 
-        c.drawString(
-            20,
-            20,
-            text
-        )
+    c.restoreState()
 
-    elif watermark_type == "상단 좌측":
+c.save()
 
-        c.drawString(
-            20,
-            800,
-            text
-        )
+packet.seek(0)
 
-    elif watermark_type == "중앙":
+return PdfReader(packet)
+```
 
-        c.drawCentredString(
-            300,
-            400,
-            text
-        )
+def create_logo_watermark(
+logo_file,
+size,
+opacity,
+position
+):
 
-    elif watermark_type == "대각선":
+```
+packet = io.BytesIO()
 
-        c.saveState()
+c = canvas.Canvas(packet)
 
-        c.translate(
-            300,
-            400
-        )
+logo = Image.open(logo_file)
 
-        c.rotate(45)
+try:
+    c.setFillAlpha(opacity)
+except:
+    pass
 
-        c.drawCentredString(
-            0,
-            0,
-            text
-        )
+if position == "하단 우측":
 
-        c.restoreState()
+    x = 470
+    y = 20
 
-    elif watermark_type == "반복":
+elif position == "상단 우측":
 
-        c.saveState()
+    x = 470
+    y = 700
 
-        c.rotate(35)
+elif position == "하단 좌측":
 
-        for x in range(-200, 900, 250):
+    x = 20
+    y = 20
 
-            for y in range(-200, 900, 180):
+elif position == "상단 좌측":
 
-                c.drawString(
-                    x,
-                    y,
-                    text
-                )
+    x = 20
+    y = 700
 
-        c.restoreState()
+else:
 
-    c.save()
+    x = 250
+    y = 350
 
-    packet.seek(0)
+c.drawImage(
+    ImageReader(logo),
+    x,
+    y,
+    width=size,
+    height=size,
+    mask="auto"
+)
 
-    return PdfReader(packet)
+c.save()
 
+packet.seek(0)
+
+return PdfReader(packet)
+```
 
 def add_watermark():
 
-    st.title("💧 PDF 워터마크 추가")
+```
+st.title("💧 PDF 워터마크 추가")
 
-    uploaded_file = st.file_uploader(
-        "PDF 파일 업로드",
-        type=["pdf"]
-    )
+uploaded_file = st.file_uploader(
+    "PDF 파일 업로드",
+    type=["pdf"]
+)
 
-    if uploaded_file is None:
-        return
+if uploaded_file is None:
+    return
 
-    watermark_mode = st.radio(
+watermark_mode = st.radio(
     "워터마크 종류",
     [
         "텍스트",
@@ -135,17 +174,65 @@ def add_watermark():
     ]
 )
 
-    if watermark_mode == "텍스트":
+position = st.selectbox(
+    "위치",
+    [
+        "하단 우측",
+        "상단 우측",
+        "하단 좌측",
+        "상단 좌측",
+        "중앙"
+    ]
+)
+
+if watermark_mode == "텍스트":
 
     watermark_text = st.text_input(
         "워터마크 문구",
-        value="상업적 이용 불가"
+        "상업적 이용 불가"
     )
 
-    else:
+    font_size = st.slider(
+        "글자 크기",
+        8,
+        40,
+        12
+    )
+
+    gray_level = st.slider(
+        "회색 정도",
+        0.1,
+        0.95,
+        0.65,
+        step=0.05
+    )
+
+    preview_opacity = 1 - gray_level
+
+    st.markdown(
+        f'''
+        <div style="
+        border:1px solid #ccc;
+        height:120px;
+        position:relative;
+        padding:20px;">
+            <div style="
+            position:absolute;
+            right:10px;
+            bottom:10px;
+            font-size:{font_size}px;
+            color:rgba(0,0,0,{preview_opacity});">
+            {watermark_text}
+            </div>
+        </div>
+        ''',
+        unsafe_allow_html=True
+    )
+
+else:
 
     logo_file = st.file_uploader(
-        "회사 로고 PNG 업로드",
+        "회사 로고 PNG",
         type=["png"]
     )
 
@@ -157,23 +244,6 @@ def add_watermark():
             width=200
         )
 
-    watermark_type = st.selectbox(
-    "위치",
-    [
-        "하단 우측",
-        "상단 우측",
-        "하단 좌측",
-        "상단 좌측",
-        "중앙"
-    ]
-)
-
-    col1, col2 = st.columns([1, 2])
-
-    with col1:
-
-        if watermark_mode == "로고":
-
     logo_size = st.slider(
         "로고 크기",
         30,
@@ -181,154 +251,75 @@ def add_watermark():
         100
     )
 
-        gray_level = st.slider(
-            "회색 정도",
-            0.1,
-            0.95,
-            0.65,
-            step=0.05
-        )
-
-    with col2:
-
-        preview_opacity = 1 - gray_level
-
-        st.markdown(
-            f"""
-            <div style="
-                border:1px solid #cccccc;
-                border-radius:8px;
-                padding:20px;
-                height:120px;
-                position:relative;
-                background:#fafafa;
-            ">
-                <div style="
-                    position:absolute;
-                    right:15px;
-                    bottom:10px;
-                    font-size:{font_size}px;
-                    color:rgba(0,0,0,{preview_opacity});
-                ">
-                    {watermark_text}
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        st.caption("실제 적용될 워터마크 미리보기")
-
-    st.divider()
-
-    if st.button("💧 워터마크 적용"):
-
-        try:
-
-            reader = PdfReader(uploaded_file)
-
-            if watermark_mode == "텍스트":
-
-    watermark_pdf = create_watermark(
-        watermark_text,
-        font_size,
-        gray_level,
-        watermark_type
+    logo_opacity = st.slider(
+        "로고 투명도",
+        0.1,
+        1.0,
+        0.5,
+        step=0.05
     )
 
-else:
+if st.button("💧 워터마크 적용"):
 
-    if logo_file is None:
+    try:
 
-        st.error("로고 PNG를 업로드해주세요.")
-        return
+        reader = PdfReader(uploaded_file)
 
-    watermark_pdf = create_logo_watermark(
-        logo_file,
-        logo_size,
-        watermark_type
-    )
-            def create_logo_watermark(
-    logo_file,
-    size,
-    position
-):
+        if watermark_mode == "텍스트":
 
-    packet = io.BytesIO()
+            watermark_pdf = create_text_watermark(
+                watermark_text,
+                font_size,
+                gray_level,
+                position
+            )
 
-    c = canvas.Canvas(packet)
+        else:
 
-    logo = Image.open(logo_file)
+            if logo_file is None:
 
-    if position == "하단 우측":
-
-        x = 470
-        y = 20
-
-    elif position == "상단 우측":
-
-        x = 470
-        y = 700
-
-    elif position == "하단 좌측":
-
-        x = 20
-        y = 20
-
-    elif position == "상단 좌측":
-
-        x = 20
-        y = 700
-
-    else:
-
-        x = 250
-        y = 350
-
-    c.drawImage(
-        ImageReader(logo),
-        x,
-        y,
-        width=size,
-        height=size,
-        mask="auto"
-    )
-
-    c.save()
-
-    packet.seek(0)
-
-    return PdfReader(packet)
-
-            watermark_page = watermark_pdf.pages[0]
-
-            writer = PdfWriter()
-
-            for page in reader.pages:
-
-                page.merge_page(
-                    watermark_page
+                st.error(
+                    "로고 PNG를 업로드해주세요."
                 )
+                return
 
-                writer.add_page(page)
-
-            output = io.BytesIO()
-
-            writer.write(output)
-
-            output.seek(0)
-
-            st.success("워터마크 적용 완료!")
-
-            st.download_button(
-                "📥 워터마크 PDF 다운로드",
-                data=output,
-                file_name="watermarked.pdf",
-                mime="application/pdf"
+            watermark_pdf = create_logo_watermark(
+                logo_file,
+                logo_size,
+                logo_opacity,
+                position
             )
 
-        except Exception as e:
+        watermark_page = watermark_pdf.pages[0]
 
-            st.error(
-                f"오류 발생: {str(e)}"
+        writer = PdfWriter()
+
+        for page in reader.pages:
+
+            page.merge_page(
+                watermark_page
             )
+
+            writer.add_page(page)
+
+        output = io.BytesIO()
+
+        writer.write(output)
+
+        output.seek(0)
+
+        st.success("워터마크 적용 완료!")
+
+        st.download_button(
+            "📥 워터마크 PDF 다운로드",
+            data=output,
+            file_name="watermarked.pdf",
+            mime="application/pdf"
+        )
+
+    except Exception as e:
+
+        st.error(
+            f"오류 발생: {str(e)}"
+        )
+```
