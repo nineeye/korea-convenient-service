@@ -8,7 +8,7 @@ from webtools.pdf_rotate import rotate_pdf
 from webtools.pdf_remove import remove_pages
 from webtools.pdf_excel import convert_pdf_to_excel
 from webtools.pdf_split import split_pdf
-# from webtools.pdf_ocr import pdf_ocr 
+from webtools.pdf_ocr import pdf_ocr 
 
 st.sidebar.title("🛠️ PDF 도구 모음")
 # 4번 메뉴 추가
@@ -34,8 +34,8 @@ elif choice == "PDF → 이미지 변환":
     convert_pdf_to_image()
 elif choice == "PDF → Excel 변환":
     convert_pdf_to_excel()  
-# elif choice == "PDF OCR":
-#    pdf_ocr()
+elif choice == "PDF OCR":
+    pdf_ocr()
 elif choice == "PDF 분할":
     split_pdf()        
 elif choice == "PDF 암호 설정/해제": # 추가!
