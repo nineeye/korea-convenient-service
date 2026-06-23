@@ -3,5 +3,7 @@ import io
 
 from pypdf import PdfReader, PdfWriter
 
+from reportlab.pdfgen import canvas
+
 def add_watermark():
-    st.title("1단계 성공")
+    st.title("2단계 성공")
