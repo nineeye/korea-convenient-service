@@ -9,7 +9,7 @@ pdf2image
 pypdf
 pdfplumber
 openpyxl
-PyPDF2
+pypdf
 pytesseract
 Pillow
 python-docx
