@@ -9,8 +9,13 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 
 # 워터마크 생성
-def create_watermark(text, font_size, gray_level):
-
+def create_watermark(
+    text,
+    font_size,
+    gray_level,
+    watermark_type
+):
+    
     packet = io.BytesIO()
 
     pdfmetrics.registerFont(
@@ -32,11 +37,84 @@ def create_watermark(text, font_size, gray_level):
     )
 
     # 우측 하단
+    if watermark_type == "하단 우측":
+
     c.drawRightString(
         560,
         20,
         text
     )
+
+elif watermark_type == "상단 우측":
+
+    c.drawRightString(
+        560,
+        800,
+        text
+    )
+
+elif watermark_type == "하단 좌측":
+
+    c.drawString(
+        20,
+        20,
+        text
+    )
+
+elif watermark_type == "상단 좌측":
+
+    c.drawString(
+        20,
+        800,
+        text
+    )
+
+elif watermark_type == "중앙":
+
+    c.drawCentredString(
+        300,
+        400,
+        text
+    )
+
+elif watermark_type == "대각선":
+
+    c.saveState()
+
+    c.translate(
+        300,
+        400
+    )
+
+    c.rotate(
+        45
+    )
+
+    c.drawCentredString(
+        0,
+        0,
+        text
+    )
+
+    c.restoreState()
+
+elif watermark_type == "반복":
+
+    c.saveState()
+
+    c.rotate(35)
+
+    for x in range(-200, 900, 250):
+
+        for y in range(-200, 900, 180):
+
+            c.drawString(
+                x,
+                y,
+                text
+            )
+
+    c.restoreState()
 
     c.save()
 
@@ -123,7 +201,8 @@ def add_watermark():
             watermark_pdf = create_watermark(
                 watermark_text,
                 font_size,
-                gray_level
+                gray_level,
+                watermark_type
             )
 
             watermark_page = watermark_pdf.pages[0]
