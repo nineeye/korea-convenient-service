@@ -6,6 +6,8 @@ from pypdf import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from PIL import Image
+from reportlab.lib.utils import ImageReader
 
 
 def create_watermark(
@@ -125,34 +127,59 @@ def add_watermark():
     if uploaded_file is None:
         return
 
+    watermark_mode = st.radio(
+    "워터마크 종류",
+    [
+        "텍스트",
+        "로고"
+    ]
+)
+
+    if watermark_mode == "텍스트":
+
     watermark_text = st.text_input(
         "워터마크 문구",
         value="상업적 이용 불가"
     )
 
-    watermark_type = st.selectbox(
-        "워터마크 위치",
-        [
-            "하단 우측",
-            "상단 우측",
-            "하단 좌측",
-            "상단 좌측",
-            "중앙",
-            "대각선",
-            "반복"
-        ]
+    else:
+
+    logo_file = st.file_uploader(
+        "회사 로고 PNG 업로드",
+        type=["png"]
     )
+
+    if logo_file:
+
+        st.image(
+            logo_file,
+            caption="로고 미리보기",
+            width=200
+        )
+
+    watermark_type = st.selectbox(
+    "위치",
+    [
+        "하단 우측",
+        "상단 우측",
+        "하단 좌측",
+        "상단 좌측",
+        "중앙"
+    ]
+)
 
     col1, col2 = st.columns([1, 2])
 
     with col1:
 
-        font_size = st.slider(
-            "글자 크기",
-            8,
-            40,
-            10
-        )
+        if watermark_mode == "로고":
+
+    logo_size = st.slider(
+        "로고 크기",
+        30,
+        300,
+        100
+    )
 
         gray_level = st.slider(
             "회색 정도",
@@ -200,12 +227,78 @@ def add_watermark():
 
             reader = PdfReader(uploaded_file)
 
-            watermark_pdf = create_watermark(
-                watermark_text,
-                font_size,
-                gray_level,
-                watermark_type
-            )
+            if watermark_mode == "텍스트":
+
+    watermark_pdf = create_watermark(
+        watermark_text,
+        font_size,
+        gray_level,
+        watermark_type
+    )
+
+else:
+
+    if logo_file is None:
+
+        st.error("로고 PNG를 업로드해주세요.")
+        return
+
+    watermark_pdf = create_logo_watermark(
+        logo_file,
+        logo_size,
+        watermark_type
+    )
+            def create_logo_watermark(
+    logo_file,
+    size,
+    position
+):
+
+    packet = io.BytesIO()
+
+    c = canvas.Canvas(packet)
+
+    logo = Image.open(logo_file)
+
+    if position == "하단 우측":
+
+        x = 470
+        y = 20
+
+    elif position == "상단 우측":
+
+        x = 470
+        y = 700
+
+    elif position == "하단 좌측":
+
+        x = 20
+        y = 20
+
+    elif position == "상단 좌측":
+
+        x = 20
+        y = 700
+
+    else:
+
+        x = 250
+        y = 350
+
+    c.drawImage(
+        ImageReader(logo),
+        x,
+        y,
+        width=size,
+        height=size,
+        mask="auto"
+    )
+
+    c.save()
+
+    packet.seek(0)
+
+    return PdfReader(packet)
 
             watermark_page = watermark_pdf.pages[0]
 
