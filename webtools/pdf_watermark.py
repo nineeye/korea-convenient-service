@@ -8,14 +8,13 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 
-# 워터마크 생성
 def create_watermark(
     text,
     font_size,
     gray_level,
     watermark_type
 ):
-    
+
     packet = io.BytesIO()
 
     pdfmetrics.registerFont(
@@ -27,94 +26,85 @@ def create_watermark(
 
     c = canvas.Canvas(packet)
 
-    # 회색 정도
     c.setFillGray(gray_level)
+    c.setFont("Nanum", font_size)
 
-    # 한글 폰트
-    c.setFont(
-        "Nanum",
-        font_size
-    )
-
-    # 우측 하단
     if watermark_type == "하단 우측":
 
-    c.drawRightString(
-        560,
-        20,
-        text
-    )
+        c.drawRightString(
+            560,
+            20,
+            text
+        )
 
-elif watermark_type == "상단 우측":
+    elif watermark_type == "상단 우측":
 
-    c.drawRightString(
-        560,
-        800,
-        text
-    )
+        c.drawRightString(
+            560,
+            800,
+            text
+        )
 
-elif watermark_type == "하단 좌측":
+    elif watermark_type == "하단 좌측":
 
-    c.drawString(
-        20,
-        20,
-        text
-    )
+        c.drawString(
+            20,
+            20,
+            text
+        )
 
-elif watermark_type == "상단 좌측":
+    elif watermark_type == "상단 좌측":
 
-    c.drawString(
-        20,
-        800,
-        text
-    )
+        c.drawString(
+            20,
+            800,
+            text
+        )
 
-elif watermark_type == "중앙":
+    elif watermark_type == "중앙":
 
-    c.drawCentredString(
-        300,
-        400,
-        text
-    )
+        c.drawCentredString(
+            300,
+            400,
+            text
+        )
 
-elif watermark_type == "대각선":
+    elif watermark_type == "대각선":
 
-    c.saveState()
+        c.saveState()
 
-    c.translate(
-        300,
-        400
-    )
+        c.translate(
+            300,
+            400
+        )
 
-    c.rotate(
-        45
-    )
+        c.rotate(45)
 
-    c.drawCentredString(
-        0,
-        0,
-        text
-    )
+        c.drawCentredString(
+            0,
+            0,
+            text
+        )
 
-    c.restoreState()
+        c.restoreState()
 
-elif watermark_type == "반복":
+    elif watermark_type == "반복":
 
-    c.saveState()
+        c.saveState()
 
-    c.rotate(35)
+        c.rotate(35)
 
-    for x in range(-200, 900, 250):
+        for x in range(-200, 900, 250):
 
-        for y in range(-200, 900, 180):
+            for y in range(-200, 900, 180):
 
-            c.drawString(
-                x,
-                y,
-                text
-            )
+                c.drawString(
+                    x,
+                    y,
+                    text
+                )
 
-    c.restoreState()
+        c.restoreState()
 
     c.save()
 
@@ -123,7 +113,6 @@ elif watermark_type == "반복":
     return PdfReader(packet)
 
 
-# 메인 함수
 def add_watermark():
 
     st.title("💧 PDF 워터마크 추가")
@@ -136,21 +125,22 @@ def add_watermark():
     if uploaded_file is None:
         return
 
-    logo_file = st.file_uploader(
-    "로고 이미지(PNG)",
-    type=["png"]
-)
-
-    watermark_mode = st.radio(
-    "워터마크 유형",
-    [
-        "텍스트",
-        "로고"
-    ]
-)
     watermark_text = st.text_input(
         "워터마크 문구",
         value="상업적 이용 불가"
+    )
+
+    watermark_type = st.selectbox(
+        "워터마크 위치",
+        [
+            "하단 우측",
+            "상단 우측",
+            "하단 좌측",
+            "상단 좌측",
+            "중앙",
+            "대각선",
+            "반복"
+        ]
     )
 
     col1, col2 = st.columns([1, 2])
@@ -159,16 +149,16 @@ def add_watermark():
 
         font_size = st.slider(
             "글자 크기",
-            min_value=8,
-            max_value=40,
-            value=10
+            8,
+            40,
+            10
         )
 
         gray_level = st.slider(
-            "투명도",
-            min_value=0.1,
-            max_value=0.95,
-            value=0.65,
+            "회색 정도",
+            0.1,
+            0.95,
+            0.65,
             step=0.05
         )
 
@@ -223,7 +213,9 @@ def add_watermark():
 
             for page in reader.pages:
 
-                page.merge_page(watermark_page)
+                page.merge_page(
+                    watermark_page
+                )
 
                 writer.add_page(page)
 
