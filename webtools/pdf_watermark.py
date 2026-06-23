@@ -136,6 +136,18 @@ def add_watermark():
     if uploaded_file is None:
         return
 
+    logo_file = st.file_uploader(
+    "로고 이미지(PNG)",
+    type=["png"]
+)
+
+    watermark_mode = st.radio(
+    "워터마크 유형",
+    [
+        "텍스트",
+        "로고"
+    ]
+)
     watermark_text = st.text_input(
         "워터마크 문구",
         value="상업적 이용 불가"
