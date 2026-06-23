@@ -13,3 +13,4 @@ pypdf
 pytesseract
 Pillow
 python-docx
+reportlab
