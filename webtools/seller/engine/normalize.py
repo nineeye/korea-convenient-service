@@ -21,7 +21,7 @@ def load_json(path):
 
 
 
-def save_json(path,data):
+def save_json(path, data):
 
     with open(
         path,
@@ -45,7 +45,9 @@ def normalize_name(name, rules):
 
 
 
+    # -------------------
     # 단어 제거
+    # -------------------
 
     for word in rules["remove_words"]:
 
@@ -56,7 +58,9 @@ def normalize_name(name, rules):
 
 
 
+    # -------------------
     # 패턴 제거
+    # -------------------
 
     for pattern in rules["remove_patterns"]:
 
@@ -68,7 +72,43 @@ def normalize_name(name, rules):
 
 
 
-    # 공백 정리
+    # -------------------
+    # 빈 괄호 제거
+    # -------------------
+
+    result = re.sub(
+        r"\(\s*\)",
+        "",
+        result
+    )
+
+
+
+    # -------------------
+    # 특수문자 정리
+    # -------------------
+
+    result = re.sub(
+        r"[,\|]+",
+        " ",
+        result
+    )
+
+
+
+    # x 단독 제거
+    result = re.sub(
+        r"\bx\b",
+        " ",
+        result,
+        flags=re.IGNORECASE
+    )
+
+
+
+    # -------------------
+    # 여러 공백 정리
+    # -------------------
 
     result = re.sub(
         r"\s+",
@@ -77,7 +117,29 @@ def normalize_name(name, rules):
     )
 
 
+
+    # -------------------
+    # 앞뒤 특수문자 제거
+    # -------------------
+
+    result = re.sub(
+        r"^[^가-힣a-zA-Z0-9]+",
+        "",
+        result
+    )
+
+
+    result = re.sub(
+        r"[^가-힣a-zA-Z0-9]+$",
+        "",
+        result
+    )
+
+
+
     return result.strip()
+
+
 
 
 
@@ -104,6 +166,7 @@ def run():
         original = product["original_name"]
 
 
+
         clean = normalize_name(
             original,
             rules
@@ -117,6 +180,7 @@ def run():
 
 
 
+
     db["meta"]["last_update"] = datetime.now().strftime("%Y-%m-%d")
 
 
@@ -124,6 +188,7 @@ def run():
         MASTER_DB,
         db
     )
+
 
 
     print("===================")
@@ -136,6 +201,8 @@ def run():
     )
 
     print("===================")
+
+
 
 
 
