@@ -136,23 +136,22 @@ def normalize_name(name, rules):
     )
 
 
-    # 남은 괄호 제거
-result = re.sub(
-    r"[\(\)]",
-    "",
-    result
-)
+        # 남은 괄호 제거
+    result = re.sub(
+        r"[\(\)]",
+        "",
+        result
+    )
+
+    # 숫자만 남은 조각 제거
+    result = re.sub(
+        r"\s+\d+$",
+        "",
+        result
+    )
 
 
-# 숫자만 남은 조각 제거
-result = re.sub(
-    r"\s+\d+$",
-    "",
-    result
-)
-
-
-
+    
     return result.strip()
 
 
