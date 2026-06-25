@@ -17,38 +17,25 @@ def create_product(product_id, category, name):
 
         "keyword": category,
 
-
         "original_name": name,
-
 
         "clean_name": "",
 
-
         "brand": "",
-
 
         "attributes": {},
 
-
         "removed_words": [],
-
 
         "duplicate_count": 0,
 
-
         "status": "new",
 
-
         "history": [
-
             {
-
                 "date": datetime.now().strftime("%Y-%m-%d"),
-
                 "action": "added"
-
             }
-
         ]
 
     }
@@ -57,27 +44,19 @@ def create_product(product_id, category, name):
 
 def convert():
 
-
     products = []
 
     product_id = 1
 
 
-
     files = os.listdir(RAW_FOLDER)
-
 
 
     for file in files:
 
 
         if not file.endswith(".json"):
-
             continue
-
-
-
-        category = file.replace(".json","")
 
 
         path = os.path.join(
@@ -86,26 +65,28 @@ def convert():
         )
 
 
-
         with open(
             path,
             "r",
             encoding="utf-8"
         ) as f:
 
-
             data = json.load(f)
 
 
 
+        category = data["category"]
+
+        titles = data["titles"]
+
+
         print(
-            f"{file} 불러오는중..."
+            f"{category} 불러오는중... 상품 {len(titles)}개"
         )
 
 
 
-        for name in data:
-
+        for title in titles:
 
 
             product = create_product(
@@ -114,40 +95,33 @@ def convert():
 
                 category,
 
-                name
+                title
 
             )
 
 
             products.append(product)
 
-
             product_id += 1
-
 
 
 
     master = {
 
 
-        "meta":{
+        "meta": {
 
+            "version": "1.0",
 
-            "version":"1.0",
-
-
-            "total_products":len(products),
-
+            "total_products": len(products),
 
             "last_update":
             datetime.now().strftime("%Y-%m-%d")
 
-
         },
 
 
-        "products":products
-
+        "products": products
 
     }
 
@@ -162,7 +136,6 @@ def convert():
         encoding="utf-8"
 
     ) as f:
-
 
 
         json.dump(
@@ -181,7 +154,7 @@ def convert():
 
     print("===================")
 
-    print("완료")
+    print("완료!")
 
     print(
         "총 상품:",
@@ -192,6 +165,6 @@ def convert():
 
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
 
     convert()
