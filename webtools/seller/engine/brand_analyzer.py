@@ -4,6 +4,8 @@ from collections import Counter
 
 MASTER_DB = "../data/master_db.json"
 
+BRAND_FILE = "../data/brand_dictionary.json"
+
 
 
 def load_json(path):
@@ -18,21 +20,91 @@ def load_json(path):
 
 
 
+
+
+def save_json(path,data):
+
+    with open(
+        path,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            data,
+            f,
+            ensure_ascii=False,
+            indent=2
+        )
+
+
+
+
+
+def find_brand(name, brands):
+
+
+    # 1단계 : 사전 검색
+
+    for brand in brands:
+
+
+        if brand.lower() in name.lower():
+
+            return brand
+
+
+
+
+    # 2단계 : 첫 단어 후보
+
+    words = name.split()
+
+
+    if words:
+
+
+        first = words[0]
+
+
+        # 숫자 제거
+
+        if len(first) >= 2:
+
+            return first
+
+
+
+
+
+    return "기타"
+
+
+
+
+
 def run():
+
 
     db = load_json(
         MASTER_DB
     )
 
 
-    products = db["products"]
+    brand_data = load_json(
+        BRAND_FILE
+    )
 
 
-    brands = []
+    brands = brand_data["brands"]
 
 
 
-    for product in products:
+    counter = Counter()
+
+
+
+    for product in db["products"]:
 
 
         name = product.get(
@@ -41,34 +113,32 @@ def run():
         )
 
 
-        if not name:
-            continue
+        brand = find_brand(
+            name,
+            brands
+        )
+
+
+        product["brand"] = brand
+
+
+        counter[brand] += 1
 
 
 
-        words = name.split()
 
 
-
-        if words:
-
-            brand = words[0]
-
-            brands.append(
-                brand
-            )
-
-
-
-    counter = Counter(
-        brands
+    save_json(
+        MASTER_DB,
+        db
     )
+
 
 
 
     print("===================")
 
-    print("브랜드 TOP20")
+    print("브랜드 재분석 완료")
 
     print("===================")
 
@@ -81,6 +151,8 @@ def run():
             "개 :",
             brand
         )
+
+
 
 
 
