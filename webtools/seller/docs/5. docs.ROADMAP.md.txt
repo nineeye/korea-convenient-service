@@ -1,0 +1,31 @@
+# ROADMAP
+
+## v2.1
+
+DOM Collector 개선
+
+차단 회피
+
+Dashboard 개선
+
+---
+
+## v2.2
+
+AI Keyword
+
+AI Rewrite
+
+AI Report
+
+---
+
+## v3.0
+
+Seller SaaS
+
+회원관리
+
+클라우드 Dashboard
+
+매출 예측

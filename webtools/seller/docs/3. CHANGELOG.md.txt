@@ -1,0 +1,41 @@
+# CHANGELOG
+
+---
+
+## Seller OS v2.0
+
+최초 프로젝트 구조 정리
+
+### 추가
+
+Dashboard
+
+Score Engine
+
+Recommendation Engine
+
+Top Pick Engine
+
+API 구조
+
+좌우 Dashboard
+
+### 수정
+
+경로 구조 정리
+
+engine import 개선
+
+Dashboard 개선
+
+### 예정
+
+AI Keyword
+
+AI Market
+
+Charts
+
+Auto Repair
+
+DOM Collector v2

@@ -1,0 +1,26 @@
+Seller OS
+
+README_PROJECT.md
+CHANGELOG.md
+VERSION.json
+LICENSE
+
+docs/
+    SYSTEM_ARCHITECTURE.md
+    API.md
+    ROADMAP.md
+
+workspace/
+    PROJECT_STATUS.json
+    TODO.md
+    BUG_LIST.md
+    IDEAS.md
+    SESSION_LOG.md
+
+collector/
+engine/
+web/
+tools/
+data/
+logs/
+backup/

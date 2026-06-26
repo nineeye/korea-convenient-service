@@ -1,0 +1,27 @@
+# Seller OS 구조
+
+Collector
+
+↓
+
+Master DB
+
+↓
+
+Score Engine
+
+↓
+
+Recommendation Engine
+
+↓
+
+Top Pick
+
+↓
+
+Dashboard
+
+↓
+
+API

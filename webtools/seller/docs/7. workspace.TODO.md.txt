@@ -1,0 +1,15 @@
+# TODO
+
+현재 작업
+
+□ DOM Collector 개선
+
+□ Keyword Engine
+
+□ Dashboard Chart
+
+□ AI Report
+
+□ Auto Repair
+
+□ Backup System
