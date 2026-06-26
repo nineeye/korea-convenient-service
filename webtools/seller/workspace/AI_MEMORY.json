@@ -1,67 +1,27 @@
-현재 구조
-Seller OS
-
-README_PROJECT.md
-CHANGELOG.md
-VERSION.json
-LICENSE
-
-docs/
-    SYSTEM_ARCHITECTURE.md
-    API.md
-    ROADMAP.md
-
-workspace/
-    PROJECT_STATUS.json
-    TODO.md
-    BUG_LIST.md
-    IDEAS.md
-    SESSION_LOG.md
-
-collector/
-engine/
-web/
-tools/
-data/
-logs/
-backup/
-
-
-
-현재 버전
 {
-    "project": "Seller OS",
-    "version": "2.0",
-    "release_date": "2026-06-26",
-    "status": "Development",
-    "author": "User + ChatGPT"
+  "project": "Seller OS",
+  "version": "2.0.0",
+  "last_update": "2026-06-27",
+  "current_branch": "main",
+
+  "modules": {
+    "collector": "v2",
+    "dashboard": "v2",
+    "score_engine": "v2",
+    "recommend_engine": "v1",
+    "top_pick_engine": "v1"
+  },
+
+  "working_on": [
+    "네이버 차단 회피",
+    "DOM 개선",
+    "키워드 품질 분석"
+  ],
+
+  "known_bugs": [
+    "네이버 차단 페이지가 키워드로 저장됨",
+    "검색량 계산 개선 필요"
+  ],
+
+  "next_version": "2.1"
 }
-
-
-
-현재 Collector
-
-
-
-현재 Dashboard
-
-
-
-현재 Engine
-
-
-
-현재 Bug
-# BUG
-
-1네이버 차단
-
-2keywords = 0
-
-3DOM 변경 대응
-
-4속도 개선
-
-
-
-현재 목표
