@@ -1,4 +1,4 @@
-from seller.web.app import app
+from web.app import app
 import os
 
 if __name__ == "__main__":
