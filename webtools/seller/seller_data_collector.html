@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>판매자 데이터 수집기 V2</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    max-width:1200px;
+    margin:30px auto;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+}
+
+input[type=text]{
+    width:100%;
+    padding:10px;
+    margin-bottom:10px;
+}
+
+textarea{
+    width:100%;
+    height:300px;
+    padding:10px;
+    font-size:14px;
+}
+
+button{
+    padding:10px 15px;
+    margin:5px;
+    cursor:pointer;
+}
+
+.result{
+    margin-top:20px;
+    border:1px solid #ddd;
+    padding:15px;
+}
+
+#output,
+#newItems{
+    white-space:pre-wrap;
+    max-height:300px;
+    overflow:auto;
+    border:1px solid #eee;
+    padding:10px;
+    margin-top:10px;
+}
+</style>
+
+</head>
+<body>
+
+<h1>📦 판매자 데이터 수집기 V2</h1>
+
+<label>카테고리명</label>
+<input type="text" id="category" placeholder="예: 유산균">
+
+<label>기존 JSON 불러오기</label>
+<input type="file" id="jsonFile">
+
+<br><br>
+
+<button onclick="loadJSON()">기존 JSON 불러오기</button>
+
+<hr>
+
+<label>상품명 붙여넣기</label>
+
+<textarea id="titles" placeholder="상품명을 한 줄에 하나씩 붙여넣으세요"></textarea>
+
+<div>
+
+<button onclick="processData()">중복 제거</button>
+
+<button onclick="updateDB()">DB 업데이트</button>
+
+<button onclick="downloadJSON()">JSON 저장</button>
+
+<button onclick="downloadTXT()">TXT 저장</button>
+
+</div>
+
+<div class="result">
+
+<h3>DB 상태</h3>
+
+<p>기존 상품 수 : <span id="oldCount">0</span></p>
+
+<p>신규 상품 수 : <span id="newCount">0</span></p>
+
+<p>중복 상품 수 : <span id="dupCount">0</span></p>
+
+<p>최종 상품 수 : <span id="finalCount">0</span></p>
+
+<hr>
+
+<h3>신규 발견 상품</h3>
+
+<div id="newItems"></div>
+
+<hr>
+
+<h3>전체 결과</h3>
+
+<p>상품 수 : <span id="count">0</span></p>
+
+<div id="output"></div>
+
+</div>
+
+<script>
+
+let existingDB = [];
+let cleanedTitles = [];
+
+function processData(){
+
+    const raw =
+        document.getElementById('titles').value;
+
+    const lines = raw
+        .split('\n')
+        .map(v => v.trim())
+        .filter(v => v.length > 0);
+
+    cleanedTitles = [...new Set(lines)];
+
+    document.getElementById('count').innerText =
+        cleanedTitles.length;
+
+    document.getElementById('output').innerText =
+        cleanedTitles.join('\n');
+
+}
+
+function loadJSON(){
+
+    const file =
+        document.getElementById('jsonFile').files[0];
+
+    if(!file){
+
+        alert('JSON 파일을 선택하세요');
+        return;
+
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+        try{
+
+            const data =
+                JSON.parse(e.target.result);
+
+            existingDB = data.titles || [];
+
+            document.getElementById('oldCount').innerText =
+                existingDB.length;
+
+            alert(
+                existingDB.length +
+                '개 상품 불러오기 완료'
+            );
+
+        }catch(err){
+
+            alert('JSON 파일 형식 오류');
+
+        }
+
+    };
+
+    reader.readAsText(file);
+
+}
+
+function updateDB(){
+
+    const raw =
+        document.getElementById('titles').value;
+
+    const newTitles = raw
+        .split('\n')
+        .map(v => v.trim())
+        .filter(v => v.length > 0);
+
+    const uniqueNew =
+        [...new Set(newTitles)];
+
+    const oldSet =
+        new Set(existingDB);
+
+    let newItems = [];
+
+    let duplicateCount = 0;
+
+    uniqueNew.forEach(title => {
+
+        if(oldSet.has(title)){
+
+            duplicateCount++;
+
+        }else{
+
+            newItems.push(title);
+
+        }
+
+    });
+
+    const mergedDB = [
+
+        ...existingDB,
+
+        ...newItems
+
+    ];
+
+    cleanedTitles = mergedDB;
+
+    document.getElementById('newCount').innerText =
+        newItems.length;
+
+    document.getElementById('dupCount').innerText =
+        duplicateCount;
+
+    document.getElementById('finalCount').innerText =
+        mergedDB.length;
+
+    document.getElementById('count').innerText =
+        mergedDB.length;
+
+    document.getElementById('output').innerText =
+        mergedDB.join('\n');
+
+    document.getElementById('newItems').innerText =
+        newItems.join('\n');
+
+}
+
+function downloadJSON(){
+
+    if(cleanedTitles.length === 0){
+
+        alert('저장할 데이터가 없습니다');
+        return;
+
+    }
+
+    const category =
+        document.getElementById('category').value || '미분류';
+
+    const data = {
+
+        category: category,
+
+        count: cleanedTitles.length,
+
+        updated:
+            new Date().toISOString(),
+
+        titles: cleanedTitles
+
+    };
+
+    const blob = new Blob(
+        [JSON.stringify(data,null,2)],
+        {type:'application/json'}
+    );
+
+    const a = document.createElement('a');
+
+    a.href =
+        URL.createObjectURL(blob);
+
+    a.download =
+        category + '.json';
+
+    a.click();
+
+}
+
+function downloadTXT(){
+
+    if(cleanedTitles.length === 0){
+
+        alert('저장할 데이터가 없습니다');
+        return;
+
+    }
+
+    const category =
+        document.getElementById('category').value || '미분류';
+
+    const blob = new Blob(
+        [cleanedTitles.join('\n')],
+        {type:'text/plain'}
+    );
+
+    const a = document.createElement('a');
+
+    a.href =
+        URL.createObjectURL(blob);
+
+    a.download =
+        category + '.txt';
+
+    a.click();
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+    "version":"2.0",
+    "collector":"Developing",
+    "dashboard":"Working",
+    "score_engine":"Working",
+    "recommend":"Working",
+    "top_pick":"Working",
+    "keyword_engine":"Preparing"
+}

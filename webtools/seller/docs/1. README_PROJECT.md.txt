@@ -1,0 +1,59 @@
+# Seller OS
+
+## Version
+
+2.0
+
+---
+
+## 프로젝트 목적
+
+네이버 스마트스토어 상품을 분석하여
+
+- 상품 수집
+- 키워드 분석
+- AI 점수 계산
+- 판매 가능성 분석
+- 추천 상품 선별
+
+을 자동으로 수행하는 시스템
+
+---
+
+## 현재 기능
+
+✔ 상품 DB
+
+✔ Dashboard
+
+✔ Score Engine
+
+✔ Recommendation Engine
+
+✔ Top Pick Engine
+
+---
+
+## 앞으로 개발 예정
+
+□ 네이버 DOM Collector v2
+
+□ AI Keyword Generator
+
+□ AI Market Analyzer
+
+□ Auto Repair
+
+□ Dashboard Chart
+
+□ SaaS API
+
+---
+
+개발 기준
+
+모든 업데이트는
+
+Seller OS Version
+
+단위로 진행한다.

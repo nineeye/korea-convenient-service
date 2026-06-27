@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>키워드 DB 구축기</title>
+
+<style>
+body{
+    font-family: Arial;
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+textarea{
+    width:100%;
+    height:300px;
+    padding:10px;
+}
+
+button{
+    padding:10px 20px;
+    margin-top:10px;
+    cursor:pointer;
+}
+
+table{
+    width:100%;
+    border-collapse: collapse;
+    margin-top:20px;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:left;
+}
+
+th{
+    background:#f5f5f5;
+}
+
+.keyword{
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🔍 키워드 DB 구축기</h1>
+
+<p>
+네이버 쇼핑 상품명을 한 줄에 하나씩 붙여넣으세요.
+</p>
+
+<textarea id="input"></textarea>
+
+<br>
+
+<button onclick="analyze()">
+분석하기
+</button>
+
+<div id="result"></div>
+
+<script>
+
+const stopWords = [
+"무료",
+"정품",
+"국내산",
+"수입",
+"행사",
+"특가",
+"세트",
+"개",
+"입",
+"포",
+"캡슐",
+"정"
+];
+
+function analyze(){
+
+    let text =
+    document.getElementById("input").value;
+
+    let lines =
+    text.split("\n")
+        .map(v=>v.trim())
+        .filter(v=>v);
+
+    let freq = {};
+
+    lines.forEach(title=>{
+
+        let words =
+        title.split(/[\s,()/\-]+/);
+
+        words.forEach(word=>{
+
+            word = word.trim();
+
+            if(word.length < 2) return;
+            if(stopWords.includes(word)) return;
+
+            freq[word] =
+            (freq[word] || 0) + 1;
+
+        });
+
+    });
+
+    let sorted =
+    Object.entries(freq)
+    .sort((a,b)=>b[1]-a[1]);
+
+    let html = `
+    <h2>분석결과</h2>
+
+    <table>
+    <tr>
+        <th>키워드</th>
+        <th>횟수</th>
+    </tr>
+    `;
+
+    sorted.forEach(item=>{
+
+        html += `
+        <tr>
+            <td class="keyword">${item[0]}</td>
+            <td>${item[1]}</td>
+        </tr>
+        `;
+
+    });
+
+    html += "</table>";
+
+    document.getElementById("result").innerHTML =
+    html;
+}
+
+</script>
+
+</body>
+</html>
