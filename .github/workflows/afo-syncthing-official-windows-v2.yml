@@ -1,0 +1,56 @@
+name: AFO Syncthing official Windows EXE retry with generated GUI
+on:
+  push:
+    branches: [afo-rclone-free-build-20261009]
+    paths: [.github/workflows/afo-syncthing-official-windows-v2.yml]
+permissions:
+  contents: read
+jobs:
+  syncthing:
+    runs-on: windows-2025
+    timeout-minutes: 75
+    steps:
+      - name: Official pinned Syncthing source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: syncthing/syncthing
+          ref: 5fb192176ded31f75cb745ce483a7f78c0e38054
+          fetch-depth: 1
+          path: upstream
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version-file: upstream/go.mod
+          cache: false
+      - name: Compile Syncthing from actual source
+        shell: pwsh
+        working-directory: upstream
+        run: |
+          $ErrorActionPreference='Stop'
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -ne '5fb192176ded31f75cb745ce483a7f78c0e38054') { throw 'SOURCE_PIN_MISMATCH' }
+          $env:GOOS='windows';$env:GOARCH='amd64';$env:GOTOOLCHAIN='local';$env:CGO_ENABLED='0'
+          # Official upstream must generate GUI assets before direct Go compilation.
+          go generate github.com/syncthing/syncthing/lib/api/auto github.com/syncthing/syncthing/cmd/infra/strelaypoolsrv/auto
+          if ($LASTEXITCODE -ne 0) { throw 'OFFICIAL_GUI_ASSET_GENERATION_FAILED' }
+          New-Item -ItemType Directory -Force dist | Out-Null
+          go build -trimpath -o dist/syncthing.exe ./cmd/syncthing
+          if ($LASTEXITCODE -ne 0) { throw 'SYNCTHING_REAL_BUILD_FAILED' }
+          $exe=(Resolve-Path dist/syncthing.exe).Path
+          & $exe --version | Tee-Object -FilePath dist/syncthing-version.txt
+          if ($LASTEXITCODE -ne 0) { throw 'SYNCTHING_WINDOWS_EXEC_FAILED' }
+          $bytes=[IO.File]::ReadAllBytes($exe)
+          if ($bytes[0] -ne 77 -or $bytes[1] -ne 90) { throw 'INVALID_EXE' }
+          $hash=(Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          [ordered]@{kind='AFO_SYNCTHING_REAL_WINDOWS_BUILD_PROOF';sha=$hash;bytes=$bytes.Length;commit=$sha;version=(Get-Content dist/syncthing-version.txt -TotalCount 1);windows_execution='PASS';runner_os=$env:RUNNER_OS;github_run_id=$env:GITHUB_RUN_ID;factory_final='NOT_APPROVED'} | ConvertTo-Json | Set-Content dist/AFO_SYNCTHING_PROOF.json
+          Write-Host ('SYNCTHING_REAL_WINDOWS_PASS_SHA256=' + $hash)
+      - name: Preserve real result
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: AFO_OFFICIAL_SYNCTHING_WINDOWS_X64
+          path: |
+            upstream/dist/syncthing.exe
+            upstream/dist/syncthing-version.txt
+            upstream/dist/AFO_SYNCTHING_PROOF.json
+          retention-days: 1
