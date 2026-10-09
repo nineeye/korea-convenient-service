@@ -1,0 +1,40 @@
+name: AFO Batch Rust Cargo Real App
+on:
+  push:
+    branches: [afo-batch-10-build-families-20261009]
+    paths: [.github/workflows/afo-batch-rust.yml]
+permissions:
+  contents: read
+jobs:
+  rust-windows:
+    runs-on: windows-2022
+    timeout-minutes: 65
+    steps:
+      - uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659
+      - name: Build official open-source fd repository
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          git clone --filter=blob:none https://github.com/sharkdp/fd.git source
+          if ($LASTEXITCODE -ne 0) {throw 'GIT_CLONE_FAIL'}
+          git -C source checkout --detach 14dcd92fb76ca0ebc2e82671a275f67c790d25fc
+          if ($LASTEXITCODE -ne 0) {throw 'SOURCE_PIN_FAIL'}
+          Push-Location source
+          cargo build --release --locked
+          if ($LASTEXITCODE -ne 0) {throw 'CARGO_BUILD_FAIL'}
+          & .\target\release\fd.exe --version | Tee-Object ../version.txt
+          if ($LASTEXITCODE -ne 0) {throw 'RUST_EXE_SMOKE_FAIL'}
+          Pop-Location
+          $exe='source/target/release/fd.exe'
+          $sha=(Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          [ordered]@{family='rust-cargo';project='sharkdp/fd';commit='14dcd92fb76ca0ebc2e82671a275f67c790d25fc';sha256=$sha;windows_smoke='PASS';customer_release='NOT_APPROVED';run=$env:GITHUB_RUN_ID} | ConvertTo-Json | Set-Content proof.json
+          Write-Host ('RUST_CARGO_REAL_BUILD_PASS '+$sha)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: success()
+        with:
+          name: AFO_RUST_CARGO_PROOF
+          path: |
+            source/target/release/fd.exe
+            version.txt
+            proof.json
+          retention-days: 2
