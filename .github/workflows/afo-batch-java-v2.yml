@@ -1,0 +1,43 @@
+name: AFO Batch Java Maven Spring Real Source retry v2
+on:
+  push:
+    branches: [afo-batch-10-build-families-20261009]
+    paths: [.github/workflows/afo-batch-java-v2.yml]
+permissions:
+  contents: read
+jobs:
+  java-maven:
+    runs-on: windows-2022
+    timeout-minutes: 65
+    steps:
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build full Spring Petclinic official open source Maven project
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          git clone --filter=blob:none https://github.com/spring-projects/spring-petclinic.git source
+          if ($LASTEXITCODE -ne 0) {throw 'GIT_CLONE_FAIL'}
+          git -C source checkout --detach 500158f732419217507c7656904b8e6aa1bcc0d6
+          if ($LASTEXITCODE -ne 0) {throw 'SOURCE_PIN_FAIL'}
+          Push-Location source
+          & .\mvnw.cmd -B -DskipTests package
+          if ($LASTEXITCODE -ne 0) {throw 'MAVEN_BUILD_FAIL'}
+          $jars=@(Get-ChildItem target -Filter '*.jar' | Where-Object {$_.Name -notmatch 'original'})
+          if ($jars.Count -ne 1) {throw 'EXPECTED_ONE_JAR'}
+          $jar=$jars[0]
+          & jar tf $jar.FullName | Select-String 'BOOT-INF' | Select-Object -First 1 | Out-Null
+          $sha=(Get-FileHash $jar.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          Pop-Location
+          [ordered]@{family='java-maven';project='spring-projects/spring-petclinic';commit='500158f732419217507c7656904b8e6aa1bcc0d6';sha256=$sha;jar_build='PASS';windows_webserver_smoke='NOT_TESTED';customer_release='NOT_APPROVED';run=$env:GITHUB_RUN_ID} | ConvertTo-Json | Set-Content proof.json
+          Write-Host ('JAVA_MAVEN_FULL_PROJECT_PASS '+$sha)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: success()
+        with:
+          name: AFO_JAVA_MAVEN_PROOF
+          path: |
+            source/target/*.jar
+            proof.json
+          retention-days: 2
