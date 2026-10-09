@@ -1,0 +1,40 @@
+name: AFO Batch DotNet WPF Windows Real Build
+on:
+  push:
+    branches: [afo-batch-10-build-families-20261009]
+    paths: [.github/workflows/afo-batch-dotnet.yml]
+permissions:
+  contents: read
+jobs:
+  dotnet-wpf:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: 8.0.x
+      - name: Build Windows-only open-source .NET WPF SDK template
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          dotnet new wpf -n AfoWpfSmoke --framework net8.0 --no-restore
+          if ($LASTEXITCODE -ne 0) {throw 'WPF_SCAFFOLD_FAIL'}
+          dotnet publish AfoWpfSmoke/AfoWpfSmoke.csproj -c Release -r win-x64 --self-contained false -o output
+          if ($LASTEXITCODE -ne 0) {throw 'WPF_PUBLISH_FAIL'}
+          $exe='output/AfoWpfSmoke.exe'
+          if (!(Test-Path $exe)) {throw 'EXE_NOT_CREATED'}
+          $bytes=[IO.File]::ReadAllBytes((Resolve-Path $exe))
+          if ($bytes[0] -ne 77 -or $bytes[1] -ne 90) {throw 'WPF_PE_INVALID'}
+          $sha=(Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          [ordered]@{family='dotnet-wpf';source='official dotnet new wpf template';sdk=(dotnet --version);sha256=$sha;exe_created='PASS';noninteractive_gui_launch='NOT_TESTED';customer_release='NOT_APPROVED';run=$env:GITHUB_RUN_ID} | ConvertTo-Json | Set-Content proof.json
+          Write-Host ('DOTNET_WPF_WINDOWS_PUBLISH_PASS '+$sha)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: success()
+        with:
+          name: AFO_DOTNET_WPF_PROOF
+          path: |
+            output/AfoWpfSmoke.exe
+            output/AfoWpfSmoke.dll
+            output/AfoWpfSmoke.runtimeconfig.json
+            proof.json
+          retention-days: 2
