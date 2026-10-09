@@ -1,0 +1,43 @@
+name: AFO Batch Electron Forge Windows Real Package
+on:
+  push:
+    branches: [afo-batch-10-build-families-20261009]
+    paths: [.github/workflows/afo-batch-electron.yml]
+permissions:
+  contents: read
+jobs:
+  electron-forge:
+    runs-on: windows-2022
+    timeout-minutes: 70
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Official OSS Electron Forge + TypeScript Webpack real Windows packaging
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $env:NODE_INSTALLER='npm'
+          npx.cmd --yes create-electron-app@latest afo-electron --template=webpack-typescript
+          if ($LASTEXITCODE -ne 0) {throw 'ELECTRON_FORGE_SCAFFOLD_FAIL'}
+          Push-Location afo-electron
+          npm.cmd run package
+          if ($LASTEXITCODE -ne 0) {throw 'ELECTRON_WINDOWS_PACKAGE_FAIL'}
+          $bins=@(Get-ChildItem out -Filter '*.exe' -Recurse -File)
+          if ($bins.Count -lt 1) {throw 'ELECTRON_WIN_EXE_NOT_CREATED'}
+          $exe=$bins[0]
+          $bytes=[IO.File]::ReadAllBytes($exe.FullName)
+          if ($bytes[0] -ne 77 -or $bytes[1] -ne 90) {throw 'ELECTRON_PE_INVALID'}
+          $sha=(Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          Pop-Location
+          [ordered]@{family='electron-forge-webpack-typescript';source='official Electron Forge OSS scaffold';sha256=$sha;exe=$exe.Name;bytes=$exe.Length;windows_package='PASS';gui_window_visual_check='NOT_TESTED';customer_release='NOT_APPROVED';run=$env:GITHUB_RUN_ID} | ConvertTo-Json | Set-Content proof.json
+          Write-Host ('ELECTRON_REAL_FORGE_PACKAGE_PASS '+$sha)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: success()
+        with:
+          name: AFO_ELECTRON_FORGE_PROOF
+          path: |
+            proof.json
+            afo-electron/out/**/*.exe
+            afo-electron/package-lock.json
+          retention-days: 2
