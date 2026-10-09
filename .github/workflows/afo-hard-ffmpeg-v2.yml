@@ -1,0 +1,85 @@
+name: AFO Hard Gate FFmpeg C MSYS2 Native Windows retry v2
+on:
+  push:
+    branches: [afo-hard-builds-20261009]
+    paths: [.github/workflows/afo-hard-ffmpeg-v2.yml]
+permissions:
+  contents: read
+jobs:
+  windows-ffmpeg-source:
+    runs-on: windows-2025
+    timeout-minutes: 90
+    steps:
+      - name: Official pinned FFmpeg source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: FFmpeg/FFmpeg
+          ref: 894da5ca7d742e4429ffb2af534fcda0103ef593
+          path: upstream
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Set up independent MSYS2 UCRT64 toolchain
+        uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            base-devel
+            make
+            git
+            diffutils
+            pkgconf
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-nasm
+            mingw-w64-ucrt-x86_64-binutils
+      - name: Native FFmpeg configure and complete C toolchain build
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          cd upstream
+          test "$(git rev-parse HEAD)" = "894da5ca7d742e4429ffb2af534fcda0103ef593"
+          test "$(git rev-parse 'HEAD^{tree}')" = "3d9447976aedc2a6cbdae5b53a039937ca6e0d26"
+          echo "PINNED_SOURCE_PASS"
+          export PATH="/ucrt64/bin:$PATH"
+          ./configure --target-os=mingw32 --arch=x86_64 --disable-autodetect --disable-doc --disable-debug --disable-ffplay --enable-static --disable-shared --extra-ldflags='-static -static-libgcc'
+          make -j4
+          test -s ffmpeg.exe
+          test -s ffprobe.exe
+          echo "REAL_FFMPEG_NATIVE_COMPILE_PASS"
+      - name: Real Windows EXE execute encode and decode
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $src=Join-Path $env:GITHUB_WORKSPACE 'upstream'
+          $env:PATH='C:\msys64\ucrt64\bin;'+$env:PATH
+          $ff=Join-Path $src 'ffmpeg.exe'; $fp=Join-Path $src 'ffprobe.exe'
+          & $ff -version | Select-Object -First 2
+          if ($LASTEXITCODE -ne 0) { throw 'FFMPEG_WINDOWS_EXEC_FAIL' }
+          & $fp -version | Select-Object -First 2
+          if ($LASTEXITCODE -ne 0) { throw 'FFPROBE_WINDOWS_EXEC_FAIL' }
+          $wav=Join-Path $src 'afo_signal.wav'
+          & $ff -nostdin -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=0.5' -c:a pcm_s16le -y $wav
+          if ($LASTEXITCODE -ne 0 -or !(Test-Path $wav) -or (Get-Item $wav).Length -lt 4000) { throw 'FFMPEG_REAL_WAV_GENERATION_FAILED' }
+          $probe=(& $fp -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1 $wav | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0 -or $probe -notmatch 'pcm_s16le') { throw 'FFPROBE_WAV_DECODE_FAILED' }
+          $out=@{}
+          foreach ($name in @('ffmpeg.exe','ffprobe.exe')) {
+            $path=Join-Path $src $name
+            $data=[IO.File]::ReadAllBytes($path);$p=[BitConverter]::ToInt32($data,0x3c)
+            if ($data[0] -ne 77 -or $data[1] -ne 90 -or [BitConverter]::ToUInt16($data,$p+4) -ne 0x8664) { throw "PE_X64_FAILED_$name" }
+            $out[$name]=@{sha256=(Get-FileHash $path -Algorithm SHA256).Hash.ToLowerInvariant();size=$data.Length}
+          }
+          [ordered]@{kind='AFO_HARD_FFMPEG_WIN';source='FFmpeg/FFmpeg';commit='894da5ca7d742e4429ffb2af534fcda0103ef593';toolchain='MSYS2 UCRT64 GCC';executables=$out;wav_bytes=(Get-Item $wav).Length;wave_probe=$probe;windows_real_smoke='PASS';factory_release='NOT_APPROVED';run_id=$env:GITHUB_RUN_ID} | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $src 'afo_ffmpeg_proof.json') -Encoding utf8
+          Write-Host 'FFMPEG_NATIVE_WINDOWS_ENCODE_PROBE_PASS'
+      - name: Preserve actual binaries and proofs
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: AFO_HARD_FFMPEG_NATIVE_WINDOWS
+          path: |
+            upstream/ffmpeg.exe
+            upstream/ffprobe.exe
+            upstream/afo_signal.wav
+            upstream/afo_ffmpeg_proof.json
+          retention-days: 2
+          if-no-files-found: error
