@@ -1,0 +1,112 @@
+name: AFO C0168 Actual Windows SDK Adapter Commands
+on:
+  push:
+    branches: [afo-c0168-native-adapter-smoke-20261009]
+    paths: [.github/workflows/afo-c0168-sdk-smoke.yml]
+permissions:
+  contents: read
+jobs:
+  rust-cargo:
+    runs-on: windows-2022
+    timeout-minutes: 40
+    steps:
+      - name: Rust offline MSVC x64 real Windows EXE
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          cargo new --bin rust-smoke
+          if ($LASTEXITCODE -ne 0) {throw 'RUST_NEW_FAIL'}
+          Push-Location rust-smoke
+          cargo generate-lockfile --offline
+          if ($LASTEXITCODE -ne 0) {throw 'RUST_LOCK_FAIL'}
+          $env:CARGO_NET_OFFLINE='true'
+          $env:CARGO_TARGET_DIR="$PWD\_build"
+          cargo build --release --locked --offline --target x86_64-pc-windows-msvc
+          if ($LASTEXITCODE -ne 0) {throw 'RUST_C0167_COMPAT_BUILD_FAIL'}
+          $exe="$env:CARGO_TARGET_DIR\x86_64-pc-windows-msvc\release\rust-smoke.exe"
+          & $exe
+          if ($LASTEXITCODE -ne 0) {throw 'RUST_RUN_FAIL'}
+          $sha=(Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          Pop-Location
+          [ordered]@{family='rust';real_windows_build='PASS';windows_execution='PASS';sha256=$sha;command='cargo build --release --locked --offline --target x86_64-pc-windows-msvc';run_id=$env:GITHUB_RUN_ID;customer_final='NOT_APPROVED'} | ConvertTo-Json | Set-Content rust-proof.json
+          Write-Host ('RUST_REAL_BUILD_AND_RUN_PASS '+$sha)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: success()
+        with:
+          name: C0168_REAL_RUST_SDK
+          path: |
+            rust-smoke/_build/x86_64-pc-windows-msvc/release/rust-smoke.exe
+            rust-proof.json
+          retention-days: 2
+  dotnet-sdk:
+    runs-on: windows-2022
+    timeout-minutes: 40
+    steps:
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: 8.0.x
+      - name: Offline restore with RID + publish including DLL runtimeconfig
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          dotnet new console -n dotnet-smoke -f net8.0 --no-restore
+          if ($LASTEXITCODE -ne 0) {throw 'DOTNET_NEW_FAIL'}
+          New-Item -ItemType Directory -Force empty-feed | Out-Null
+          dotnet restore dotnet-smoke/dotnet-smoke.csproj --runtime win-x64 --source "$PWD\empty-feed" --disable-parallel
+          if ($LASTEXITCODE -ne 0) {throw 'DOTNET_OFFLINE_RESTORE_RID_FAIL'}
+          dotnet publish dotnet-smoke/dotnet-smoke.csproj -c Release -r win-x64 --self-contained false --no-restore -o "$PWD\publish"
+          if ($LASTEXITCODE -ne 0) {throw 'DOTNET_OFFLINE_PUBLISH_FAIL'}
+          & .\publish\dotnet-smoke.exe
+          if ($LASTEXITCODE -ne 0) {throw 'DOTNET_RUN_FAIL'}
+          foreach ($file in @('dotnet-smoke.exe','dotnet-smoke.dll','dotnet-smoke.runtimeconfig.json','dotnet-smoke.deps.json')) {
+            if (!(Test-Path ("publish\"+$file))) {throw ("DOTNET_SIDECAR_MISSING_"+$file)}
+          }
+          $sha=(Get-FileHash publish/dotnet-smoke.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          [ordered]@{family='dotnet';rid='win-x64';real_windows_build='PASS';windows_execution='PASS';sha256=$sha;sidecars='PASS';run_id=$env:GITHUB_RUN_ID;customer_final='NOT_APPROVED'} | ConvertTo-Json | Set-Content dotnet-proof.json
+          Write-Host ('DOTNET_OFFLINE_RID_BUILD_AND_RUN_PASS '+$sha)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: success()
+        with:
+          name: C0168_REAL_DOTNET_SDK
+          path: |
+            publish/dotnet-smoke.exe
+            publish/dotnet-smoke.dll
+            publish/dotnet-smoke.runtimeconfig.json
+            publish/dotnet-smoke.deps.json
+            dotnet-proof.json
+          retention-days: 2
+  python-pyinstaller:
+    runs-on: windows-2022
+    timeout-minutes: 40
+    steps:
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Native PyInstaller onefile x64 real execution
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python -m pip install --disable-pip-version-check pyinstaller==6.16.0
+          if ($LASTEXITCODE -ne 0) {throw 'PYINSTALLER_SETUP_FAIL'}
+          New-Item -ItemType Directory -Force source | Out-Null
+          @'
+          import sys
+          print('AFO_C0168_PYTHON_WINDOWS_EXECUTION_PASS')
+          sys.exit(0)
+          '@ | Set-Content source/main.py -Encoding utf8
+          $env:PIP_NO_INDEX='1'
+          python -m PyInstaller --noconfirm --clean --onefile --noupx --distpath "$PWD\dist" --workpath "$PWD\work" --specpath "$PWD\spec" source/main.py
+          if ($LASTEXITCODE -ne 0) {throw 'PYINSTALLER_C0167_COMPAT_BUILD_FAIL'}
+          $msg=(& .\dist\main.exe | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0 -or $msg -ne 'AFO_C0168_PYTHON_WINDOWS_EXECUTION_PASS') {throw 'PYTHON_REAL_EXE_RUN_FAIL'}
+          $sha=(Get-FileHash dist/main.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          [ordered]@{family='python';real_windows_build='PASS';windows_execution='PASS';sha256=$sha;pyinstaller='6.16.0';run_id=$env:GITHUB_RUN_ID;customer_final='NOT_APPROVED'} | ConvertTo-Json | Set-Content python-proof.json
+          Write-Host ('PYTHON_PYINSTALLER_NATIVE_PASS '+$sha)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: success()
+        with:
+          name: C0168_REAL_PYTHON_SDK
+          path: |
+            dist/main.exe
+            python-proof.json
+          retention-days: 2
