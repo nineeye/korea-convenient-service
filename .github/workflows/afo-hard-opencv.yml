@@ -1,0 +1,96 @@
+name: AFO Hard Gate OpenCV C++ CMake MSVC Windows DLL
+on:
+  push:
+    branches: [afo-hard-builds-20261009]
+    paths: [.github/workflows/afo-hard-opencv.yml]
+permissions:
+  contents: read
+jobs:
+  windows-opencv-source:
+    runs-on: windows-2025
+    timeout-minutes: 95
+    steps:
+      - name: Official pinned OpenCV source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: opencv/opencv
+          ref: 49486f61fb25722cbcf586b7f4320921d46fb38e
+          path: upstream
+          fetch-depth: 1
+          persist-credentials: false
+      - name: CMake configure C++ Visual Studio and DLL modules
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $commit=(& git -C upstream rev-parse HEAD).Trim()
+          $tree=(& git -C upstream rev-parse 'HEAD^{tree}').Trim()
+          if ($commit -ne '49486f61fb25722cbcf586b7f4320921d46fb38e' -or $tree -ne '4251397346b33f43cd3be0211fe9c4daa2adc8a6') { throw 'PINNED_OPENCV_SOURCE_INVALID' }
+          cmake -S upstream -B b -G 'Visual Studio 17 2022' -A x64 -DBUILD_LIST=core,imgproc,imgcodecs -DBUILD_SHARED_LIBS=ON -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_opencv_apps=OFF -DBUILD_JAVA=OFF -DBUILD_opencv_python3=OFF -DWITH_IPP=OFF -DWITH_ITT=OFF -DWITH_OPENCL=OFF -DWITH_OPENEXR=OFF -DWITH_WEBP=OFF -DWITH_TIFF=OFF -DWITH_OPENJPEG=OFF -DWITH_FFMPEG=OFF -DWITH_MSMF=OFF -DWITH_GSTREAMER=OFF -DOPENCV_ENABLE_NONFREE=OFF
+          if ($LASTEXITCODE -ne 0) { throw 'OPENCV_CMAKE_CONFIG_FAILED' }
+      - name: Actual Visual Studio compiler build and install
+        shell: pwsh
+        run: |
+          cmake --build b --config Release --parallel 3
+          if ($LASTEXITCODE -ne 0) { throw 'OPENCV_MSVC_COMPILE_FAILED' }
+          cmake --install b --config Release --prefix "$PWD\installed"
+          if ($LASTEXITCODE -ne 0) { throw 'OPENCV_CMAKE_INSTALL_FAILED' }
+      - name: Compile downstream C++ application and perform real PNG roundtrip
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          New-Item -ItemType Directory -Force sample | Out-Null
+          @'
+          cmake_minimum_required(VERSION 3.18)
+          project(afo_opencv_windows_actual LANGUAGES CXX)
+          set(CMAKE_CXX_STANDARD 17)
+          find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs)
+          add_executable(afo_opencv_smoke main.cpp)
+          target_link_libraries(afo_opencv_smoke PRIVATE ${OpenCV_LIBS})
+          '@ | Set-Content sample/CMakeLists.txt -Encoding utf8
+          @'
+          #include <opencv2/core.hpp>
+          #include <opencv2/imgproc.hpp>
+          #include <opencv2/imgcodecs.hpp>
+          #include <iostream>
+          #include <string>
+          int main(int argc,char**argv) {
+              if(argc!=2)return 10;
+              cv::Mat input(48,64,CV_8UC3,cv::Scalar(12,70,180));
+              cv::Mat small;
+              cv::resize(input,small,cv::Size(37,23));
+              if(!cv::imwrite(argv[1],small))return 11;
+              cv::Mat read=cv::imread(argv[1],cv::IMREAD_COLOR);
+              if(read.empty() || read.cols!=37 || read.rows!=23)return 12;
+              std::cout<<"OPENCV_WINDOWS_REAL_PNG_ROUNDTRIP_PASS "<<CV_VERSION<<" "<<read.cols<<"x"<<read.rows<<"\n";
+              return 0;
+          }
+          '@ | Set-Content sample/main.cpp -Encoding utf8
+          $cfg=Get-ChildItem -Path installed -Filter OpenCVConfig.cmake -Recurse | Select-Object -First 1
+          if (-not $cfg) { throw 'OPENCV_INSTALLED_CONFIG_MISSING' }
+          cmake -S sample -B sample-build -G 'Visual Studio 17 2022' -A x64 "-DOpenCV_DIR=$($cfg.DirectoryName)"
+          if ($LASTEXITCODE -ne 0) { throw 'DOWNSTREAM_CMAKE_CONFIG_FAILED' }
+          cmake --build sample-build --config Release --parallel 3
+          if ($LASTEXITCODE -ne 0) { throw 'DOWNSTREAM_CPP_COMPILE_FAILED' }
+          $dlls=@(Get-ChildItem -Path installed -Filter 'opencv_*.dll' -Recurse)
+          if ($dlls.Count -lt 3) { throw 'OPENCV_EXPECTED_DLLS_NOT_FOUND' }
+          foreach($d in $dlls){$env:PATH=$d.DirectoryName+';'+$env:PATH}
+          $exe=(Resolve-Path sample-build/Release/afo_opencv_smoke.exe).Path
+          $output=Join-Path $PWD 'afo_opencv_generated.png'
+          $msg=(& $exe $output | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0 -or $msg -notmatch 'OPENCV_WINDOWS_REAL_PNG_ROUNDTRIP_PASS 4\.12\.0' -or !(Test-Path $output) -or (Get-Item $output).Length -lt 100) { throw ('OPENCV_CPP_IMAGE_ROUNDTRIP_FAILED '+$msg) }
+          $sha=(Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          [ordered]@{kind='AFO_HARD_OPENCV_WIN';source='opencv/opencv';commit='49486f61fb25722cbcf586b7f4320921d46fb38e';toolchain='CMake Visual Studio MSVC';version='4.12.0';dll_count=$dlls.Count;demo_exe_sha256=$sha;png_bytes=(Get-Item $output).Length;windows_cpp_image_roundtrip='PASS';factory_release='NOT_APPROVED';run_id=$env:GITHUB_RUN_ID} | ConvertTo-Json -Depth 5 | Set-Content afo_opencv_proof.json -Encoding utf8
+          Write-Host $msg
+          Write-Host ('OPENCV_WIN_COMPILE_AND_PNG_PASS_SHA256=' + $sha)
+      - name: Retain proof and native DLLs
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: AFO_HARD_OPENCV_MSVC_WINDOWS
+          path: |
+            installed/**/*.dll
+            sample-build/Release/afo_opencv_smoke.exe
+            afo_opencv_generated.png
+            afo_opencv_proof.json
+          retention-days: 2
+          if-no-files-found: error
