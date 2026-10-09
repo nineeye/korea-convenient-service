@@ -1,0 +1,71 @@
+name: AFO Batch Qt6 CMake Cpp Widgets Windows Real
+on:
+  push:
+    branches: [afo-batch-10-build-families-20261009]
+    paths: [.github/workflows/afo-batch-qt.yml]
+permissions:
+  contents: read
+jobs:
+  qt-cmake:
+    runs-on: windows-2022
+    timeout-minutes: 80
+    steps:
+      - name: Install official open-source Qt6 SDK through aqtinstall
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python -m pip install aqtinstall
+          if ($LASTEXITCODE -ne 0) {throw 'AQT_INSTALL_FAIL'}
+          python -m aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 -O 'C:\Qt'
+          if ($LASTEXITCODE -ne 0) {throw 'QT6_SDK_INSTALL_FAIL'}
+      - name: Build native C++ Qt Widgets executable and real offscreen Windows GUI smoke
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          New-Item -ItemType Directory -Force sample | Out-Null
+          @'
+          cmake_minimum_required(VERSION 3.16)
+          project(AfoQtReal VERSION 1.0 LANGUAGES CXX)
+          set(CMAKE_CXX_STANDARD 17)
+          find_package(Qt6 REQUIRED COMPONENTS Widgets)
+          add_executable(AfoQtReal WIN32 main.cpp)
+          target_link_libraries(AfoQtReal PRIVATE Qt6::Widgets)
+          '@ | Set-Content sample/CMakeLists.txt -Encoding utf8
+          @'
+          #include <QApplication>
+          #include <QWidget>
+          #include <QTimer>
+          int main(int argc, char **argv) {
+            QApplication app(argc,argv);
+            QWidget widget;
+            widget.setWindowTitle("AFO Windows Qt6 real GUI");
+            widget.resize(420,230);
+            widget.show();
+            QTimer::singleShot(500,&app,&QCoreApplication::quit);
+            return app.exec();
+          }
+          '@ | Set-Content sample/main.cpp -Encoding utf8
+          $sdk='C:\Qt\6.8.3\msvc2022_64'
+          if (!(Test-Path "$sdk\lib\cmake\Qt6\Qt6Config.cmake")) {throw 'QT6_CMAKE_CONFIG_MISSING'}
+          cmake -S sample -B output -G 'Visual Studio 17 2022' -A x64 "-DCMAKE_PREFIX_PATH=$sdk"
+          if ($LASTEXITCODE -ne 0) {throw 'QT_CMAKE_CONFIG_FAIL'}
+          cmake --build output --config Release --parallel 3
+          if ($LASTEXITCODE -ne 0) {throw 'QT_MSVC_COMPILE_FAIL'}
+          $exe=(Resolve-Path output/Release/AfoQtReal.exe).Path
+          $env:PATH="$sdk\bin;"+$env:PATH
+          $env:QT_QPA_PLATFORM='offscreen'
+          & $exe
+          if ($LASTEXITCODE -ne 0) {throw 'QT_WINDOWS_GUI_OFFSCREEN_EXEC_FAIL'}
+          $sha=(Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          [ordered]@{family='qt6-cmake-widgets-msvc';source='Qt6 official OSS SDK';version='6.8.3';sha256=$sha;windows_offscreen_gui='PASS';interactive_gui_review='NOT_TESTED';customer_release='NOT_APPROVED';run=$env:GITHUB_RUN_ID} | ConvertTo-Json | Set-Content proof.json
+          Write-Host ('QT6_CMAKE_NATIVE_WINDOWS_GUI_PASS '+$sha)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: success()
+        with:
+          name: AFO_QT6_CPP_CMAKE_PROOF
+          path: |
+            output/Release/AfoQtReal.exe
+            sample/main.cpp
+            sample/CMakeLists.txt
+            proof.json
+          retention-days: 2
