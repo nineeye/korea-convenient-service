@@ -1,0 +1,46 @@
+name: AFO Batch Tauri Rust WebView2 Real Windows
+on:
+  push:
+    branches: [afo-batch-10-build-families-20261009]
+    paths: [.github/workflows/afo-batch-tauri.yml]
+permissions:
+  contents: read
+jobs:
+  tauri:
+    runs-on: windows-2022
+    timeout-minutes: 90
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659
+      - name: Official OSS Tauri scaffolder native Rust WebView2 full compile
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          npm.cmd create tauri-app@latest afo-tauri -- --template vanilla-ts --manager npm
+          if ($LASTEXITCODE -ne 0) {throw 'TAURI_SCAFFOLD_FAIL'}
+          Push-Location afo-tauri
+          npm.cmd install
+          if ($LASTEXITCODE -ne 0) {throw 'TAURI_DEP_INSTALL_FAIL'}
+          npm.cmd run tauri build -- --no-bundle
+          if ($LASTEXITCODE -ne 0) {throw 'TAURI_REAL_WIN_BUILD_FAIL'}
+          $bin=@(Get-ChildItem src-tauri/target/release -Filter '*.exe' -File | Where-Object {$_.Name -notmatch '^build-script-'})
+          if ($bin.Count -ne 1) {throw 'TAURI_EXE_MISSING_OR_AMBIGUOUS'}
+          $exe=$bin[0]
+          $data=[IO.File]::ReadAllBytes($exe.FullName)
+          if ($data[0] -ne 77 -or $data[1] -ne 90) {throw 'TAURI_PE_INVALID'}
+          $sha=(Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          Pop-Location
+          [ordered]@{family='rust-tauri-webview2';source='official create-tauri-app OSS scaffold';exe=$exe.Name;sha256=$sha;bytes=$exe.Length;compile='PASS';webview2_gui_interaction='NOT_TESTED';customer_release='NOT_APPROVED';run=$env:GITHUB_RUN_ID} | ConvertTo-Json | Set-Content proof.json
+          Write-Host ('TAURI_REAL_WINDOWS_COMPILE_PASS '+$sha)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: success()
+        with:
+          name: AFO_TAURI_WEBVIEW2_PROOF
+          path: |
+            proof.json
+            afo-tauri/src-tauri/target/release/*.exe
+            afo-tauri/package-lock.json
+            afo-tauri/src-tauri/Cargo.lock
+          retention-days: 2
